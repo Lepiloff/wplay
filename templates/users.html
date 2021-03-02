@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sample Form</title>
+</head>
+<body>
+<form method="post">
+    <label for="name">Name</label><br>
+    <input type="text" name="name" value=""/>
+    <input type="submit" value="Add new">
+</form>
+
+<p>Result: {{ result }}</p>
+{% for items in result %}
+{{result.name}}
+{% endfor %}
+
+</body>
+</html>
