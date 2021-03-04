@@ -24,7 +24,7 @@
     </p>
     <p>
     <label for="activities">Activities</label><br>
-    <select id="activities" name="activities">
+    <select id="activity" name="activity">
     {% for items in result %}
        <option value="{{ items.id }}">
         {{ items.name }}
@@ -36,9 +36,9 @@
 </form>
 
 <p>Result:</p>
-{% for items in result %}
-<p>{{items.name}}</p>
-{% endfor %}
+
+<p>{{result.event}}</p>
+
 
 </body>
 </html>

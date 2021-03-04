@@ -30,8 +30,8 @@ event_create = "INSERT INTO events(creator, title, content, location_id, activit
                "VALUES (:creator, :title, :content, :location_id, :activities_id) RETURNING id"
 
 
-event_user_create = "INSERT INTO event_users (location_id, activities_id) " \
-                    "VALUES (:location_id, :activities_id)"
+event_user_create = "INSERT INTO event_users (events_id, users_id) " \
+                    "VALUES (:events_id, :users_id)"
 
 
 # Activities
