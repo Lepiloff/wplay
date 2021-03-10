@@ -6,6 +6,7 @@ from fastapi import Form
 
 from .activity_schema import ActivityBase
 from .location_schema import LocationBase
+from models.events import Status
 
 
 class EventForm(BaseModel):
@@ -28,9 +29,13 @@ class EventBase(BaseModel):
     created_at: datetime
     title: str
     content: str
-    status: str
+    status: Status
     is_active: bool
     is_group: bool
     is_private: bool
     location_id: LocationBase
     activities_id: ActivityBase
+
+
+class EventList(EventBase):
+    pass
