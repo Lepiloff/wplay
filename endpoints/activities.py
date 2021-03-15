@@ -3,7 +3,7 @@ from typing import List
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
 
-from crud.activities import ActivityService
+from services.activities import ActivityService
 from schemas.activity_schema import ActivityList, ActivityCreate
 
 router = APIRouter()

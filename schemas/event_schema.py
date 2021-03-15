@@ -36,6 +36,13 @@ class EventBase(BaseModel):
     location_id: LocationBase
     activities_id: ActivityBase
 
+    class Config:
+        orm_mode: True
+
 
 class EventList(EventBase):
+    pass
+
+
+class EventSingle(EventBase):
     pass
