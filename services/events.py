@@ -16,42 +16,42 @@ from query import get_event, get_events, location_create, event_create, event_us
 class EventsService:
 
     async def get(self, pk: int):
-        result = await database.fetch_one(text(get_event(pk)))
-        if result is None:
-            raise HTTPException(status_code=404, detail="Events not found")
-        print(dict(result))
-        return dict(result)
+        # result = await database.fetch_one(text(get_event(pk)))
+        # if result is None:
+        #     raise HTTPException(status_code=404, detail="Events not found")
+        # print(dict(result))
+        # return dict(result)
         # TODO снизу работает все ок, но не группирует foreignkey в один объект, прочекать эту возможность
-        # query = (
-        #     select(
-        #         [
-        #          events.c.id,
-        #          events.c.title,
-        #          locations.c.city,
-        #          # locations.c.street,
-        #          # locations.c.building,
-        #          activities.c.name,
-        #         ]
-        #     )
-        #     .select_from(
-        #         events.join(locations).join(activities)
-        #     )
-        #     .where(
-        #         and_(
-        #             events.c.id == pk,
-        #             locations.c.id == events.c.location_id,
-        #             activities.c.id == events.c.activities_id)
-        #     )
-        #     .order_by(desc(events.c.created_at))
-        #  )
-        # print(query)
-        # ev = dict(await database.fetch_one(query))
-        # if ev is None:
-        #     raise HTTPException(status_code=404, detail="Event not found")
-        #
-        # print(ev)
-        #
-        # return ev
+        query = (
+            select(
+                [
+                 events.c.id,
+                 events.c.title,
+                 locations.c.city,
+                 locations.c.street,
+                 locations.c.building,
+                 activities.c.name,
+                ]
+            )
+            .select_from(
+                events.join(locations).join(activities)
+            )
+            .where(
+                and_(
+                    events.c.id == pk,
+                    locations.c.id == events.c.location_id,
+                    activities.c.id == events.c.activities_id)
+            )
+            .order_by(desc(events.c.created_at))
+         )
+        print(query)
+        ev = dict(await database.fetch_one(query))
+        if ev is None:
+            raise HTTPException(status_code=404, detail="Event not found")
+
+        print(ev)
+
+        return ev
 
     async def get_list(self):
         db_result = await database.fetch_all(get_events)

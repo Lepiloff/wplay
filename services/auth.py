@@ -1,14 +1,27 @@
+from datetime import datetime, timedelta
 from decouple import config
 from jose import JWTError, jwt
 from passlib.hash import bcrypt
 
-from fastapi import HTTPException, status
+from db import database
+
+from fastapi import HTTPException, status, Depends
+from fastapi.encoders import jsonable_encoder
+from fastapi.security import OAuth2PasswordBearer
 from pydantic import ValidationError
 
 from models.users import users
-from schemas.user_schema import User, Token
+from schemas.user_schema import User, Token, UserCreate
 
 
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/sign-in')
+
+
+def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
+    return AuthService.verify_token(token)
+
+
+# TODO async ?
 class AuthService:
     @classmethod
     def verify_password(cls, plain_password: str, hashed_password: str) -> bool:
@@ -19,7 +32,7 @@ class AuthService:
         return bcrypt.hash(password)
 
     @classmethod
-    def validate_token(cls, token: str) -> User:
+    def verify_token(cls, token: str) -> User:
         exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Could not validate credentials',
@@ -31,7 +44,7 @@ class AuthService:
             payload = jwt.decode(
                 token,
                 config('JWT_SECRET'),
-                algorithm=[config('JWT_ALGORITHM')],
+                algorithms=config('JWT_ALGORITHM'),
             )
         except JWTError:
             raise exception from None
@@ -44,10 +57,60 @@ class AuthService:
         return user
 
     @classmethod
-    def create_token(cls, user: users) -> Token:
-        user_data = User.from_orm(user)
+    async def create_token(cls, user: int) -> Token:
+        user_data = await cls.get_user_by_id(pk=user)
+        print(user_data)
+        now = datetime.utcnow()
         payload = {
-
+            'iat': now,
+            'nbf': now,
+            'exp': now + timedelta(seconds=int(config('JWT_EXPIRATION'))),
+            'sub': str(user_data['id']),
+            'user': user_data,
         }
+        payload_to_json = jsonable_encoder(payload)
+        token = jwt.encode(
+            payload_to_json,
+            config('JWT_SECRET'),
+            algorithm=config('JWT_ALGORITHM'),
+        )
+        return Token(access_token=token)
+
+    async def register_new_user(self, user_data: UserCreate) -> Token:
+        query = users.insert().values(
+            email=user_data.email, phone=user_data.phone,
+            hashed_password=self.hash_password(user_data.password)
+        )
+        user_id = await database.execute(query)
+
+        token = await self.create_token(user_id)
+        return token
+
+    @classmethod
+    async def get_user_by_email(cls, email: str):
+        query = users.select().where(users.c.email == email)
+        return await database.fetch_one(query)
+
+    @classmethod
+    async def get_user_by_id(cls, pk: int):
+        #TODO выводить тольео нужные поля в селекте
+        query = users.select().where(users.c.id == pk)
+        return dict(await database.fetch_one(query))
+
+    async def authenticate_user(self, email: str, password: str,) -> Token:
+        exception = HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail='Incorrect username or password',
+            headers={'WWW-Authenticate': 'Bearer'},
+        )
+        user = await self.get_user_by_email(email=email)
+
+        if not user:
+            raise exception
+
+        if not self.verify_password(password, user.password_hash):
+            raise exception
+
+        return self.create_token(user)
 
 

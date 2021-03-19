@@ -9,7 +9,9 @@ chardet==4.0.0
 click==7.1.2
 databases==0.4.1
 decorator==4.4.2
+dnspython==2.1.0
 ecdsa==0.14.1
+email-validator==1.1.2
 fastapi==0.63.0
 folium==0.12.1
 future==0.18.2

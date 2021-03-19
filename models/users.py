@@ -2,7 +2,6 @@ import enum
 
 from sqlalchemy import Table, Column, Integer, DateTime, Text, ForeignKey,\
      Enum, String, sql, Boolean, UniqueConstraint
-from sqlalchemy.dialects.postgresql import UUID
 
 from db import metadata
 
@@ -53,20 +52,4 @@ friends = Table(
     UniqueConstraint("user_one_id", "user_two_id", name="buddy")
 )
 
-
-# tokens = Table(
-#     "tokens",
-#     metadata,
-#     Column("id", Integer, primary_key=True),
-#     Column(
-#         "token",
-#         UUID(as_uuid=False),
-#         server_default=text("uuid_generate_v4()"),
-#         unique=True,
-#         nullable=False,
-#         index=True,
-#     ),
-#     Column("expires", DateTime()),
-#     Column("user_id", ForeignKey("users.id")),
-# )
 

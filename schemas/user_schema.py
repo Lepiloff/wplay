@@ -1,8 +1,8 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 
 
 class BaseUser(BaseModel):
-    email: str
+    email: EmailStr
     phone: str
 
 
@@ -19,5 +19,5 @@ class User(BaseUser):
 
 class Token(BaseModel):
     access_token: str
-    tocken_type: str = 'bearer'
+    token_type: str = 'bearer'
 
