@@ -17,6 +17,7 @@ from models.locations import locations
 from models.activities import activities, activities_level, account_activities_level
 from models.feedbacks import feedbacks
 from models.users import users, accounts, friends
+from models.invites import event_invites
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

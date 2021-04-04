@@ -43,5 +43,4 @@ async def event(
         service: EventsService = Depends()
 ):
     event = await service.get(pk)
-    # return event
-    # return templates.TemplateResponse('events.html', context={'request': request, 'result': event})
+    return templates.TemplateResponse('event.html', context={'request': request, 'result': event})

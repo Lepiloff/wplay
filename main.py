@@ -98,3 +98,5 @@ def read_root(request: Request):
     folium_map.save("templates/map.html")
     return templates.TemplateResponse("index.html", {"request": request})
 ##################################
+
+# TODO транзакции где надо (при множественном добавлениии\изменении существенно ускоряют запись в БД)
