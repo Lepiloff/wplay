@@ -23,6 +23,14 @@ class EventForm(BaseModel):
         return cls(street=street, house=house, title=title, content=content, activity=activity)
 
 
+class EventInviteForm(BaseModel):
+    to_user_id: int
+
+    @classmethod
+    def as_form(cls, to_user_id: int = Form(...)):
+        return cls(to_user_id=to_user_id)
+
+
 class EventBase(BaseModel):
     id: int
     creator: int

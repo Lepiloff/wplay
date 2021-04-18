@@ -4,9 +4,9 @@ from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
 
 from services.events import EventsService
+from services.events_invites import InviteService
 from services.activities import ActivityService
-from schemas.activity_schema import ActivityList
-from schemas.event_schema import EventForm, EventBase, EventList, EventSingle
+from schemas.event_schema import EventForm, EventInviteForm, EventBase, EventList, EventSingle
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -43,4 +43,37 @@ async def event(
         service: EventsService = Depends()
 ):
     event = await service.get(pk)
-    return templates.TemplateResponse('event.html', context={'request': request, 'result': event})
+    print (event)
+    print (type(event['creator'][0]['id']))
+    #TODO event отдает в юзере hashed_password , нужен ли он
+    return templates.TemplateResponse(
+        'event_invite.html',
+        context=
+        {
+            'request': request,
+            'result': event,
+            'to_user': event['creator'][0]['id']
+        }
+    )
+
+
+#TODO response_model ?
+@router.post('/{pk}')
+async def event_invite(
+        request: Request,
+        pk: int,
+        form: EventInviteForm = Depends(EventInviteForm.as_form),
+        service: InviteService = Depends()
+):
+    #TODO get_current_user ,  dont send invite to himself
+    from_user_id = 1
+    invite = await service.invite_send(pk, form.to_user_id, from_user_id)
+    # TODO success messages
+    return templates.TemplateResponse(
+        'event_invite.html',
+        context={
+            'request': request,
+            'result': invite
+
+        }
+    )

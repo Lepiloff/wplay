@@ -20,7 +20,8 @@ class EventsService:
         result = await database.fetch_one(text(get_event(pk)))
         if result is None:
             raise HTTPException(status_code=404, detail="Events not found")
-        return dict(result)
+        event = dict(result)
+        return json.loads(event['event'])
         # TODO снизу работает все ок, но не группирует foreignkey в один объект, прочекать эту возможность
         # query = (
         #     select(
@@ -85,9 +86,8 @@ class EventsService:
         #     return [dict(event) for event in events_list]
         return result
 
-
     async def post(self, street, house, title, content, activity):
-        # TODO прочекать sql create relation tables in one query  а то чет много запросов
+        # TODO прочекать sql create relation tables in one query  а то чет много запросов и в transaction завернуть
         lat, lon = get_coord(street, house)
         values = {"city": get_city(), "street": street, "house": house, "lat": lat, "long": lon}
         location_id = await database.execute(query=location_create, values=values)
@@ -101,8 +101,10 @@ class EventsService:
                   "location_id": int(location_id), "activities_id": int(activity)}
         event_id = await database.execute(query=event_create, values=values)
         values = {"events_id": int(event_id), "users_id": int(user_id)}
+        #TODO event_user_create в виде raw sql не нужен
         await database.execute(query=event_user_create, values=values)
         # TODO сейчас сделано так что возвращает абсолютно все по ивенту, причем лишним запросом в базу.
         # надо прочекать что необходимо и как это вернуть при создании объекта
         return dict(await database.fetch_one(get_event(event_id)))
     # TODO добавить update метод
+

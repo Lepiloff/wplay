@@ -2,7 +2,7 @@
 
 def get_event(pk):
     return f"SELECT json_build_object('id', e.id, 'title', e.title, 'creator', json_agg(c), " \
-        f"'activitie', json_agg(a), 'users', jsonb_agg(u), 'location', jsonb_agg(l)) " \
+        f"'activity', json_agg(a), 'users', jsonb_agg(u), 'location', jsonb_agg(l)) " \
         f"AS event FROM events AS e " \
         f"LEFT JOIN event_users AS eu ON e.id = eu.events_id " \
         f"LEFT JOIN users AS u ON eu.users_id = u.id " \
