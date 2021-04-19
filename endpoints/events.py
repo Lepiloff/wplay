@@ -6,7 +6,10 @@ from fastapi.templating import Jinja2Templates
 from services.events import EventsService
 from services.events_invites import InviteService
 from services.activities import ActivityService
+from services.auth import get_current_user
 from schemas.event_schema import EventForm, EventInviteForm, EventBase, EventList, EventSingle
+from schemas.user_schema import User
+
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -40,6 +43,7 @@ async def event_create(
 async def event(
         request: Request,
         pk: int,
+        user: User = Depends(get_current_user),
         service: EventsService = Depends()
 ):
     event = await service.get(pk)

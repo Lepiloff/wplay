@@ -59,7 +59,6 @@ class AuthService:
     @classmethod
     async def create_token(cls, user: int) -> Token:
         user_data = await cls.get_user_by_id(pk=user)
-        print(user_data)
         now = datetime.utcnow()
         payload = {
             'iat': now,
@@ -103,14 +102,11 @@ class AuthService:
             detail='Incorrect username or password',
             headers={'WWW-Authenticate': 'Bearer'},
         )
-        user = await self.get_user_by_email(email=email)
-
+        user = dict(await self.get_user_by_email(email=email))
         if not user:
             raise exception
-
-        if not self.verify_password(password, user.password_hash):
+        if not self.verify_password(password, user['hashed_password']):
             raise exception
-
-        return self.create_token(user)
+        return await self.create_token(user['id'])
 
 
