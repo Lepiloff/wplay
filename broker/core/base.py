@@ -2,6 +2,7 @@ import pika
 
 # TODO почекать с закрытием каналов и логику на это дело добавить какк в примере с pika док
 
+
 class PikaConnector:
     SOCKET_TIMEOUT = 5
 

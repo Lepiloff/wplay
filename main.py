@@ -8,10 +8,11 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from models.users import users
-
 from db import database
+from models.users import users
 from routes import api_router
+from sessions.core.base import redis_cache
+
 
 app = FastAPI()
 
@@ -28,6 +29,16 @@ async def startup():
 @app.on_event("shutdown")
 async def shutdown():
     await database.disconnect()
+
+
+@app.on_event('startup')
+async def starup_event():
+    await redis_cache.init_cache()
+
+
+@app.on_event('shutdown')
+async def shutdown_event():
+    await redis_cache.close()
 
 
 # Custom endpoints

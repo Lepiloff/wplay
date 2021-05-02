@@ -1,28 +1,37 @@
-from datetime import datetime, timedelta
+import json
+import os
+import base64
+from datetime import timedelta
+from datetime import datetime as dt
 from decouple import config
-from jose import JWTError, jwt
 from passlib.hash import bcrypt
 
+from fastapi import HTTPException, status
+
 from db import database
-
-from fastapi import HTTPException, status, Depends
-from fastapi.encoders import jsonable_encoder
-from fastapi.security import OAuth2PasswordBearer
-from pydantic import ValidationError
-
 from models.users import users
-from schemas.user_schema import User, Token, UserCreate
+from schemas.user_schema import Token, UserCreate
+from sessions.core.base import redis_cache
+from starlette.requests import Request
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/auth/sign-in')
+async def get_current_user(request: Request):
+    exception = HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN, detail="Invalid authentication"
+            )
+    cookie_authorization: str = request.cookies.get("Authorization")
+    if not cookie_authorization:
+        raise exception
+    session = await redis_cache.get(cookie_authorization)
+    if not session:
+        raise exception
+    return json.loads(session)['user_id']
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)) -> User:
-    return AuthService.verify_token(token)
 
-
-# TODO async ?
+# TODO async ?   разобраться с класс методами , нужны ли они тут
 class AuthService:
+
     @classmethod
     def verify_password(cls, plain_password: str, hashed_password: str) -> bool:
         return bcrypt.verify(plain_password, hashed_password)
@@ -31,57 +40,12 @@ class AuthService:
     def hash_password(cls, password: str) -> str:
         return bcrypt.hash(password)
 
-    @classmethod
-    def verify_token(cls, token: str) -> User:
-        exception = HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Could not validate credentials',
-            headers={
-                'WWW-Authenticate': 'Bearer'
-            },
-        )
-        try:
-            payload = jwt.decode(
-                token,
-                config('JWT_SECRET'),
-                algorithms=config('JWT_ALGORITHM'),
-            )
-        except JWTError:
-            raise exception from None
-
-        user_data = payload.get('user')
-        try:
-            user = users.parse_obj(user_data)
-        except ValidationError:
-            raise exception from None
-        return user
-
-    @classmethod
-    async def create_token(cls, user: int) -> Token:
-        user_data = await cls.get_user_by_id(pk=user)
-        now = datetime.utcnow()
-        payload = {
-            'iat': now,
-            'nbf': now,
-            'exp': now + timedelta(seconds=int(config('JWT_EXPIRATION'))),
-            'sub': str(user_data['id']),
-            'user': user_data,
-        }
-        payload_to_json = jsonable_encoder(payload)
-        token = jwt.encode(
-            payload_to_json,
-            config('JWT_SECRET'),
-            algorithm=config('JWT_ALGORITHM'),
-        )
-        return Token(access_token=token)
-
     async def register_new_user(self, user_data: UserCreate) -> Token:
         query = users.insert().values(
             email=user_data.email, phone=user_data.phone,
             hashed_password=self.hash_password(user_data.password)
         )
         user_id = await database.execute(query)
-
         token = await self.create_token(user_id)
         return token
 
@@ -92,21 +56,38 @@ class AuthService:
 
     @classmethod
     async def get_user_by_id(cls, pk: int):
-        #TODO выводить тольео нужные поля в селекте
+        #TODO выводить тольео нужные поля в селекте по идее пока нужен только id
         query = users.select().where(users.c.id == pk)
         return dict(await database.fetch_one(query))
 
-    async def authenticate_user(self, email: str, password: str,) -> Token:
+    @staticmethod
+    async def generate_session_id():
+        return base64.b64encode(os.urandom(32))
+
+    async def create_session(self, user_data: dict):
+        session_id = await self.generate_session_id()
+        user_id = user_data['id']
+        return {
+              "session_id": str(session_id),
+              "session_data": {
+                  "user_id": user_id,
+              }
+            }
+
+    async def authenticate_user(self, email: str, password: str):
         exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Incorrect username or password',
+            detail='Incorrect email or password',
             headers={'WWW-Authenticate': 'Bearer'},
         )
-        user = dict(await self.get_user_by_email(email=email))
+        user = await self.get_user_by_email(email=email)
         if not user:
+            # TODO messages to user
             raise exception
+        user = dict(user)
         if not self.verify_password(password, user['hashed_password']):
             raise exception
-        return await self.create_token(user['id'])
+        del user['hashed_password']
+        return await self.create_session(user)
 
 
