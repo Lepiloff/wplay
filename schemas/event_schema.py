@@ -23,7 +23,7 @@ class EventForm(BaseModel):
         return cls(street=street, house=house, title=title, content=content, activity=activity)
 
 
-class EventInviteForm(BaseModel):
+class EventJoinForm(BaseModel):
     to_user_id: int
 
     @classmethod

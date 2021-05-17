@@ -1,12 +1,16 @@
+import json
+
 from typing import List
 
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
 
+from broker.invites.event_invite_producer import CallPikaConnector
 from services.events import EventsService
 from services.events_invites import InviteService
 from services.activities import ActivityService
-from schemas.event_schema import EventForm, EventInviteForm, EventBase, EventList, EventSingle
+from services.auth import get_current_user
+from schemas.event_schema import EventForm, EventJoinForm, EventBase, EventList, EventSingle
 from schemas.user_schema import User
 
 
@@ -42,41 +46,48 @@ async def event_create(
 async def event(
         request: Request,
         pk: int,
-        # user: User = Depends(get_current_user),
         service: EventsService = Depends()
 ):
     event = await service.get(pk)
-    print (event)
-    print (type(event['creator'][0]['id']))
     #TODO event отдает в юзере hashed_password , нужен ли он
+    #TODO dont show join button if user joined yet
     return templates.TemplateResponse(
         'event_invite.html',
         context=
         {
             'request': request,
             'result': event,
-            'to_user': event['creator'][0]['id']
         }
     )
 
 
 #TODO response_model ?
 @router.post('/{pk}')
-async def event_invite(
+async def join_to_event(
         request: Request,
         pk: int,
-        form: EventInviteForm = Depends(EventInviteForm.as_form),
-        service: InviteService = Depends()
+        from_user_id: str = Depends(get_current_user),
+        service: InviteService = Depends(),
+        event_service: EventsService = Depends()
 ):
-    #TODO get_current_user ,  dont send invite to himself
-    from_user_id = 1
-    invite = await service.invite_send(pk, form.to_user_id, from_user_id)
-    # TODO success messages
+    #TODO  dont send invite to himself
+    event = await event_service.get(pk)
+    event_creator_id = event['creator'][0]['id']
+    invite = await service.request_to_join(pk, event_creator_id, from_user_id)
+    # TODO success messages with data from invite result
+    if invite:
+        data = {
+            'from_user_id': from_user_id,
+            'to_user_id': event_creator_id,
+            'message': 'You received join request to event '
+        }
+        message = json.dumps(data)
+        CallPikaConnector().send_message(event_creator_id, message)
     return templates.TemplateResponse(
         'event_invite.html',
         context={
             'request': request,
-            'result': invite
+            'result': event
 
         }
     )

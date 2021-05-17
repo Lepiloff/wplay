@@ -1,6 +1,7 @@
 from models.invites import event_invites
 from db import database
 
+
 class InviteService:
     async def get(self):
         pass
@@ -17,7 +18,7 @@ class InviteService:
         }
         return await database.execute(query=query, values=values)
 
-    async def invite_send(self, event_id, to_user_id, from_user_id):
+    async def request_to_join(self, event_id, to_user_id, from_user_id):
         invite = await InviteService.invite_create(event_id, to_user_id, from_user_id)
         return invite
 
