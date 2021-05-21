@@ -33,6 +33,7 @@ class PikaConnector:
         self.close()
 
     def close(self):
+        print ('Connection close')
         self._connection.close()
 
     def run(self, routing_key):

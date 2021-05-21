@@ -79,7 +79,7 @@ async def join_to_event(
         data = {
             'from_user_id': from_user_id,
             'to_user_id': event_creator_id,
-            'message': 'You received join request to event '
+            'message': 'You received join request to event: тест '
         }
         message = json.dumps(data)
         CallPikaConnector().send_message(event_creator_id, message)

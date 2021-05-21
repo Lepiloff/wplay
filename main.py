@@ -1,4 +1,5 @@
 import math
+import asyncio
 
 import folium
 import geocoder
@@ -9,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from db import database
+from helpers.custom_middleware import rmq_consumer_middleware
 from models.users import users
 from routes import api_router
 from sessions.core.base import redis_cache
@@ -41,8 +43,21 @@ async def shutdown_event():
     await redis_cache.close()
 
 
+# Custom middleware
+app.middleware('http')(rmq_consumer_middleware)
+
 # Custom endpoints
 app.include_router(api_router)
+
+
+
+
+
+
+
+
+
+
 
 
 @app.post("/simple_users")

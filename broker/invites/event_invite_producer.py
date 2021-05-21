@@ -26,7 +26,7 @@ class CallPikaConnector:
 
     @staticmethod
     def generate_routing_key(to_user_id):
-        return f'event.invite.{to_user_id}'
+        return f'event_invite_{to_user_id}'
 
     def send_message(self, to_user_id, data):
         self.producer.run(self.generate_routing_key(to_user_id))
