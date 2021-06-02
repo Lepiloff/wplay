@@ -4,6 +4,9 @@ import pika
 
 
 class PikaConnector:
+    """
+    Synchronous connector to RabbitMq
+    """
     SOCKET_TIMEOUT = 5
 
     def __init__(self, amqp_url):

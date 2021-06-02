@@ -9,7 +9,7 @@ from passlib.hash import bcrypt
 from fastapi import HTTPException, status
 
 from db import database
-from models.users import users
+from models.users import users, accounts
 from schemas.user_schema import Token, UserCreate
 from sessions.core.base import redis_cache
 from starlette.requests import Request
@@ -29,13 +29,13 @@ async def get_current_user(request: Request):
 
 
 async def is_authenticated(request: Request):
+    print ('Starting is_auth func')
     cookie_authorization: str = request.cookies.get("Authorization")
     if not cookie_authorization:
         return
     session = await redis_cache.get(cookie_authorization)
     if not session:
         return
-
     return json.loads(session)['user_id']
 
 
@@ -51,14 +51,16 @@ class AuthService:
     def hash_password(cls, password: str) -> str:
         return bcrypt.hash(password)
 
-    async def register_new_user(self, user_data: UserCreate) -> Token:
+    async def register_new_user(self, user_data: UserCreate):
         query = users.insert().values(
             email=user_data.email, phone=user_data.phone,
             hashed_password=self.hash_password(user_data.password)
         )
         user_id = await database.execute(query)
-        token = await self.create_token(user_id)
-        return token
+        query = accounts.insert().values(user_id=user_id)
+        account = await database.execute(query)
+        #TODO тут надо почекать что бы транзакционно создавать обе таблицы
+        return user_id
 
     @classmethod
     async def get_user_by_email(cls, email: str):
@@ -79,9 +81,9 @@ class AuthService:
         session_id = await self.generate_session_id()
         user_id = user_data['id']
         return {
-              "session_id": str(session_id),
-              "session_data": {
-                  "user_id": user_id,
+              'session_id': str(session_id),
+              'session_data': {
+                  'user_id': user_id,
               }
             }
 

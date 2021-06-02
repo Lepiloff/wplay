@@ -10,7 +10,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.security import OAuth2PasswordBearer
 from pydantic import ValidationError
 
-from models.users import users
+from models.users import users, accounts
 from schemas.user_schema import User, Token, UserCreate
 
 
@@ -81,7 +81,8 @@ class AuthService:
             hashed_password=self.hash_password(user_data.password)
         )
         user_id = await database.execute(query)
-
+        query = accounts.insert().values(user_id=user_id)
+        account = await database.execute(query)
         token = await self.create_token(user_id)
         return token
 

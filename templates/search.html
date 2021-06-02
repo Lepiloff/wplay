@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <!-- Section: Map -->
+  <section  class="section">
+    <div class="container">
+      <div class="row">
+        <div class="input-field col s12">
+            <p>
+                Put map here
+            </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+   <!-- Section: Filter -->
+   <section  class="section">
+    <div class="container">
+      <div class="row">
+        <form>
+        <div class="input-field col s12">
+          <select>
+            <option value="" disabled selected>Ваш город</option>
+            <option value="1">Option 1</option>
+            <option value="2">Option 2</option>
+            <option value="3">Option 3</option>
+          </select>
+          <label></label>
+        </div>
+        <div class="input-field col s12">
+            <select>
+              <option value="" disabled selected>Ваш город</option>
+              <option value="1">Option 1</option>
+              <option value="2">Option 2</option>
+              <option value="3">Option 3</option>
+            </select>
+            <label></label>
+          </div>
+          <div class="input-field col s12">
+            <select>
+              <option value="" disabled selected>Ваш город</option>
+              <option value="1">Option 1</option>
+              <option value="2">Option 2</option>
+              <option value="3">Option 3</option>
+            </select>
+            <label></label>
+          </div>
+          <div class="input-field col s12 ">
+            <button class="btn btn-large btn-register waves-effect waves-light right" type="submit" name="action">Искать
+              <i class="material-icons right">search</i>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+{% endblock content %}

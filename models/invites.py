@@ -41,3 +41,17 @@ event_invites = Table(
         nullable=True,
     ),
 )
+
+
+friend_invites = Table(
+    "friend_invites",
+    metadata,
+    Column("id", Integer(), primary_key=True),
+    Column("from_user", ForeignKey(users.c.id, ondelete="SET NULL"), nullable=False),
+    Column("to_user", ForeignKey(users.c.id, ondelete="SET NULL"), nullable=False),
+    Column("created_at", DateTime(timezone=True), server_default=sql.func.now()),
+    Column("status", Enum(InviteStatus, values_callable=lambda obj: [e.value for e in obj]),
+           nullable=False,
+           default=InviteStatus.CREATED.value,
+           server_default=InviteStatus.CREATED.value),
+)

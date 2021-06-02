@@ -20,8 +20,9 @@ class EventsService:
         result = await database.fetch_one(text(get_event(pk)))
         if result is None:
             raise HTTPException(status_code=404, detail="Events not found")
-        event = dict(result)
-        return json.loads(event['event'])
+        event = dict(result.items())
+        print (event)
+        return event
         # TODO снизу работает все ок, но не группирует foreignkey в один объект, прочекать эту возможность
         # query = (
         #     select(

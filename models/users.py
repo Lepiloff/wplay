@@ -31,14 +31,12 @@ class Gender(enum.Enum):
 accounts = Table(
     "accounts",
     metadata,
-    Column("id", Integer, primary_key=True),
-    Column("name", String(16), nullable=False),
-    Column("surname", String(16), nullable=False),
-    Column("age", String(3)),
-    Column("personal_info", Text()),
-    Column("gender", Enum(Gender, values_callable=lambda obj: [e.value for e in obj])),
-    Column("user_id", ForeignKey(users.c.id, ondelete="CASCADE"), nullable=False),
-
+    Column("user_id", ForeignKey(users.c.id), primary_key=True, ),
+    Column("name", String(16), nullable=True),
+    Column("surname", String(16), nullable=True),
+    Column("age", String(3), nullable=True),
+    Column("personal_info", Text(), nullable=True),
+    Column("gender", Enum(Gender, values_callable=lambda obj: [e.value for e in obj]), nullable=True),
 )
 
 

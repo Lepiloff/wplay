@@ -17,7 +17,9 @@ from models.locations import locations
 from models.activities import activities, activities_level, account_activities_level
 from models.feedbacks import feedbacks
 from models.users import users, accounts, friends
-from models.invites import event_invites
+from models.invites import event_invites, friend_invites
+from models.notifications import notifications
+from models.messages import messages
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -31,7 +33,7 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata =  metadata
+target_metadata = metadata
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

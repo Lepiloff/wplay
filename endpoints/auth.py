@@ -28,12 +28,13 @@ async def sign_in(
     )
     response = RedirectResponse(url='/')
     response.set_cookie(
-        'Authorization',
+        "Authorization",
         value=session['session_id'],
         httponly=True,
         max_age=1800,
         expires=1800,
     )
+    #TODO set expired time equal response cookie
     await redis_cache.set(session['session_id'], json.dumps(session['session_data']))
     return response
 
@@ -51,5 +52,6 @@ async def redis_keys():
 
 
 @router.get("/private")
-def read_private(user_id: str = Depends(get_current_user)):
+def read_private(request: Request, user_id: str = Depends(get_current_user)):
+    print (request.cookies.get("Incoming"))
     return {"user_id": user_id}
