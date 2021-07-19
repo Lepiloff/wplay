@@ -1,6 +1,6 @@
 import enum
 
-from sqlalchemy import Table, Column, Integer, Boolean, Text, String, \
+from sqlalchemy import Table, Column, Integer, Boolean, Date, Time, Text, String, \
     ForeignKey, DateTime, sql, UniqueConstraint, Enum
 
 from db import metadata
@@ -23,6 +23,8 @@ events = Table(
     Column("created_at", DateTime(timezone=True), server_default=sql.func.now()),
     Column("title", String(100), nullable=False),
     Column("content", Text(), nullable=False),
+    Column("start_date", Date()),
+    Column("start_time", Time()),
     Column("status", Enum(Status, values_callable=lambda obj: [e.value for e in obj]),
            nullable=False,
            default=Status.OPEN.value,

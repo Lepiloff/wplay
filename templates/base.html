@@ -28,7 +28,8 @@
           <i class="material-icons">menu</i>
         </a>
 
-        <ul class="right hide-on-med-and-down "  >
+        <ul class="right hide-on-med-and-down " >
+          <li><a href="#new-event-modal" class="btn modal-trigger">Создать</a></li>
           <li><a href="#login-modal" class="btn purple modal-trigger">Login</a></li>
           <li><a href="#signup-modal" class="btn purple modal-trigger">Sign up</a></li>
           <li><a href="#"><i class="material-icons">perm_identity</i></a></li>
@@ -45,6 +46,7 @@
       <li><a href="#">Video</a></li>
       <li><a href="#">Service</a></li>
       <li><a href="#">About</a></li>
+      <li><a class="btn disabled">Создать</a></li>
       <li><a href="#login-modal" class="btn purple modal-trigger">Login</a></li>
       <li><a href="#signup-modal" class="btn purple modal-trigger">Sign up</a></li>
 </ul>
@@ -191,6 +193,78 @@
   </div>
 </div>
 
+    <!-- Add new event Modal -->
+<div id="new-event-modal" class="modal">
+  <div class="modal-content">
+    <h4>Add new event</h4>
+    <form action="{{ url_for('event_create')}}" method="POST">
+      <div class="row">
+        <div class="input-field col s6">
+          <input id="street" name="street" type="text" class="validate" required>
+          <label for="street">Street</label>
+        </div>
+        <div class="input-field col s6">
+          <input id="house" name="house" type="text" class="validate" required>
+          <label for="house">Building number</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s12">
+          <input id="title" name="title" type="text" class="validate" required>
+          <label for="title">Title</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s12">
+          <input id="description" name="description" type="text" class="validate">
+          <label for="description">Description</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s6">
+            <input id="start_date" name="start_date" type="text" class="datepicker">
+            <label for="start_date">Date</label>
+        </div>
+        <div class="input-field col s6">
+             <input id="start_time" name="start_time" type="text" class="timepicker">
+             <label for="start_time">Time</label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s6">
+            <select id="activity" name="activity">
+                <option value="" disabled selected >Choose your option</option>
+                {% for activity in activities %}
+                   <option value="{{ activity.id }}">
+                    {{ activity.name }}
+                   </option>
+                {% endfor %}
+            </select>
+            <label for="activity">Activities</label>
+        </div>
+        <div class="input-field col s6 center-align">
+          <p>Private</p>
+          <div class="switch">
+            <label>
+            Off
+            <input id="private" name="is_private" type="checkbox">
+            <span class="lever"></span>
+            On
+            </label>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="input-field col s6 ">
+          <button class="btn btn-large btn-register waves-effect waves-light right" type="submit" name="action">Create
+            <i class="material-icons right">done</i>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
 <!-- Footer -->
 <footer class="section teal darken-2 white-text center">
   <p class="flow-text">Travelville &copy; 2018</p>
@@ -211,8 +285,29 @@ $('.modal').modal();
 });
 
 $(document).ready(function(){
-  $('select').formSelect();
+$('select').formSelect();
 });
+
+$(document).ready(function(){
+  $('.datepicker').datepicker(
+                    {
+        default: 'now',
+        format: 'yyyy-mm-dd'
+          }
+  );
+});
+
+$(document).ready(function(){
+  $('.timepicker').timepicker(
+          {
+        default: 'now',
+        format: 'HH:mm',
+        twelveHour: false,
+        showClearBtn: true
+          }
+  );
+});
+
 </script>
 
 </body>

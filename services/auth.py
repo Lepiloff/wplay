@@ -28,15 +28,14 @@ async def get_current_user(request: Request):
     return json.loads(session)['user_id']
 
 
-async def is_authenticated(request: Request):
-    print ('Starting is_auth func')
-    cookie_authorization: str = request.cookies.get("Authorization")
-    if not cookie_authorization:
-        return
-    session = await redis_cache.get(cookie_authorization)
-    if not session:
-        return
-    return json.loads(session)['user_id']
+# async def is_authenticated(request: Request):
+#     cookie_authorization: str = request.cookies.get("Authorization")
+#     if not cookie_authorization:
+#         return
+#     session = await redis_cache.get(cookie_authorization)
+#     if not session:
+#         return
+#     return json.loads(session)['user_id']
 
 
 

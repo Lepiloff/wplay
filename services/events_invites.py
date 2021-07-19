@@ -1,13 +1,21 @@
 from models.invites import event_invites
+from models.messages import messages
+from models.notifications import notifications
+from services.notifications import NotificationsService
+from services.messages import MessagesService
 from db import database
 
 
+EVENT = 'EVENT'
+
+
 class InviteService:
+
     async def get(self):
         pass
 
     @staticmethod
-    async def invite_create(event_id, to_user_id, from_user_id):
+    async def create(event_id, to_user_id, from_user_id):
         query = event_invites.insert()
         values = {
             'to_event': event_id,
@@ -19,7 +27,10 @@ class InviteService:
         return await database.execute(query=query, values=values)
 
     async def request_to_join(self, event_id, to_user_id, from_user_id):
-        invite = await InviteService.invite_create(event_id, to_user_id, from_user_id)
+        # TODO обернуть в транзакцию или в try
+        invite = await InviteService.create(event_id, to_user_id, from_user_id)
+        await NotificationsService.create(to_user_id, EVENT)
+        await MessagesService.create(from_user_id, to_user_id, event_id)
         return invite
 
     # async def send_request_for_invite(self, event_id, to_user_id, from_user_id):

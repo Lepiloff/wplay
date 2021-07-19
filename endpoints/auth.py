@@ -13,12 +13,12 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get('/login')
-async def sign_in(request: Request):
-    return templates.TemplateResponse('login.html', context={'request': request})
+async def login(request: Request):
+    return templates.TemplateResponse('sign_in.html', context={'request': request})
 
 
 @router.post('/login')
-async def sign_in(
+async def login(
         user_data: OAuth2PasswordRequestForm = Depends(),
         service: AuthService = Depends(),
 ):
@@ -36,7 +36,36 @@ async def sign_in(
     )
     #TODO set expired time equal response cookie
     await redis_cache.set(session['session_id'], json.dumps(session['session_data']))
+    response.status_code = 302
     return response
+
+
+@router.get('/registrations')
+async def signup(request: Request):
+    return templates.TemplateResponse('sign_up.html', context={'request': request})
+
+
+@router.post('/registrations')
+async def signup(
+        user_data: OAuth2PasswordRequestForm = Depends(),
+        service: AuthService = Depends(),
+):
+    pass
+    # session = await service.authenticate_user(
+    #     user_data.username,
+    #     user_data.password
+    # )
+    # response = RedirectResponse(url='/')
+    # response.set_cookie(
+    #     "Authorization",
+    #     value=session['session_id'],
+    #     httponly=True,
+    #     max_age=1800,
+    #     expires=1800,
+    # )
+    # #TODO set expired time equal response cookie
+    # await redis_cache.set(session['session_id'], json.dumps(session['session_data']))
+    # return response
 
 
 @router.post("/logout")

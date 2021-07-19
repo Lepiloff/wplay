@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, time, date
 
 from pydantic import BaseModel, StrictStr
 
@@ -9,18 +9,27 @@ from .location_schema import LocationBase
 from models.events import Status
 
 
+#TODO прочекать чтобы дата и время были не str а date time
 class EventForm(BaseModel):
     street: str
     house: str
     title: str
-    content: str
+    description: str
     activity: int
+    is_private: bool
+    start_date: date
+    start_time: time
 
     @classmethod
     def as_form(cls, street: str = Form(...), house: str = Form(...),
-                title: str = Form(...), content: str = Form(...),
-                activity: str = Form(...)):
-        return cls(street=street, house=house, title=title, content=content, activity=activity)
+                title: str = Form(...), description: str = Form(...),
+                activity: str = Form(...), is_private: bool = Form(False),
+                start_date: date = Form(...), start_time: time = Form(...)):
+        return cls(
+            street=street, house=house, title=title,
+            description=description, activity=activity,
+            is_private=is_private, start_date=start_date,
+            start_time=start_time)
 
 
 class EventJoinForm(BaseModel):

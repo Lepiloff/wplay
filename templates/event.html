@@ -33,7 +33,12 @@
         </div>
         <div class="col s12 m6">
           <br>
-          {{ event}}
+          {{ event.activity.name}}
+          <form method="POST">
+            <button class="btn waves-effect waves-light" type="submit" name="action">Submit
+            <i class="material-icons right">send</i>
+          </button>
+            </form>
 
           <ul class="collection with-header z-depth-4">
             <li class="collection-header">
