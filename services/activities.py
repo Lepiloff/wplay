@@ -5,8 +5,7 @@ from models.activities import activities
 
 class ActivityService:
     async def post(self, name: str):
-        values = {"name": name}
-        return await database.execute(query=create_activity, values=values)
+        return await database.execute(query=create_activity, values={"name": name})
 
     async def get(self):
         result = await database.fetch_all(query=activities.select())

@@ -14,6 +14,8 @@ from schemas.user_schema import Token, UserCreate
 from sessions.core.base import redis_cache
 from starlette.requests import Request
 
+# TODO пкажется получается что сейчас на ройтах где в депендсах есть get_current_user дважды польхователя тащит,
+#  так как есть еще в middleware ображение к is_authenticated  . Может их както можно объединить?
 
 async def get_current_user(request: Request):
     exception = HTTPException(
@@ -28,15 +30,14 @@ async def get_current_user(request: Request):
     return json.loads(session)['user_id']
 
 
-# async def is_authenticated(request: Request):
-#     cookie_authorization: str = request.cookies.get("Authorization")
-#     if not cookie_authorization:
-#         return
-#     session = await redis_cache.get(cookie_authorization)
-#     if not session:
-#         return
-#     return json.loads(session)['user_id']
-
+async def is_authenticated(request: Request):
+    cookie_authorization: str = request.cookies.get("Authorization")
+    if not cookie_authorization:
+        return
+    session = await redis_cache.get(cookie_authorization)
+    if not session:
+        return
+    return json.loads(session)['user_id']
 
 
 # TODO async ?   разобраться с класс методами , нужны ли они тут
@@ -79,8 +80,9 @@ class AuthService:
     async def create_session(self, user_data: dict):
         session_id = await self.generate_session_id()
         user_id = user_data['id']
+        print ('New', str(session_id, 'utf-8'))
         return {
-              'session_id': str(session_id),
+              'session_id': str(session_id, 'utf-8'),
               'session_data': {
                   'user_id': user_id,
               }

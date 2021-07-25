@@ -34,7 +34,7 @@ async def login(
         max_age=1800,
         expires=1800,
     )
-    #TODO set expired time equal response cookie
+    # TODO set expired time equal response cookie
     await redis_cache.set(session['session_id'], json.dumps(session['session_data']))
     response.status_code = 302
     return response
@@ -82,5 +82,5 @@ async def redis_keys():
 
 @router.get("/private")
 def read_private(request: Request, user_id: str = Depends(get_current_user)):
-    print (request.cookies.get("Incoming"))
+    # print (request.cookies.get("Incoming"))
     return {"user_id": user_id}

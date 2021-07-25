@@ -1,0 +1,22 @@
+.notification-badge {
+  position:relative;
+  padding:3px 6px;
+  background-color: #fff;
+  color: #941e1e;
+  bottom: 15px;
+  left: 15px;
+  border-radius: 50%;
+}
+.notified{
+  position: absolute;
+}
+
+.notification-badge-empty {
+  position:relative;
+  padding:3px 6px;
+  opacity:0.0;
+  bottom: 15px;
+  left: 15px;
+  border-radius: 50%;
+
+}

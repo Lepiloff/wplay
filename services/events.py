@@ -14,11 +14,11 @@ from models.activities import activities
 from query import get_event, get_events, location_create, event_create, event_user_create
 
 
-
 class EventsService:
     EVENT_CONTENT = ('location', 'activity')
 
     async def get(self, pk: int):
+        # TODO убрать из query файла SQL запрс в виде функции и заменить на  передачу параметров с помощью ":"
         result = await database.fetch_one(text(get_event(pk)))
         if result is None:
             raise HTTPException(status_code=404, detail="Events not found")

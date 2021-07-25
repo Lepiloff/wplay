@@ -8,11 +8,10 @@ from query import get_profile_info
 from db import database
 
 
-
 class UserService:
 
     async def get_user_info(self, pk: int):
-        user = await database.fetch_one(text(get_profile_info(pk)))
+        user = await database.fetch_one(query=get_profile_info, values={'pk': pk})
         if user is None:
             raise HTTPException(status_code=404, detail="Events not found")
         user = dict(user.items())

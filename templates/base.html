@@ -6,7 +6,7 @@
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <!--Import materialize.css-->
   <link type="text/css" href="{{ url_for('static', path='/css/materialize.min.css') }}" rel="stylesheet">
-  <link type="text/css" href="{{ url_for('static', path='/css/materialize.css') }}" rel="stylesheet">
+  <link type="text/css" href="{{ url_for('static', path='/css/custom.css') }}" rel="stylesheet">
 
   <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
   <!--Let browser know website is optimized for mobile-->
@@ -21,7 +21,7 @@
 <div class="navbar-fixed">
   <nav class="teal">
     <div class="container">
-      <div class="nav-wrapper">
+      <div class="nav-wrapper ">
         <a href="#" class="brand-logo">WPlay</a>
 
         <a href="#" class="sidenav-trigger" data-target="mobile-nav">
@@ -32,7 +32,33 @@
           <li><a href="#new-event-modal" class="btn modal-trigger">Создать</a></li>
           <li><a href="#login-modal" class="btn purple modal-trigger">Login</a></li>
           <li><a href="#signup-modal" class="btn purple modal-trigger">Sign up</a></li>
-          <li><a href="#"><i class="material-icons">perm_identity</i></a></li>
+          {% if request.cookies.event_notifications %}
+          <li>
+            <a class="" href="#">
+              <i class="material-icons notified ">group_add</i>
+              {% if request.cookies.friend_notifications %}
+              <small class="notification-badge">{{request.cookies.friend_notifications}}</small>
+              {% else %}
+              <small class="notification-badge-empty">0</small>
+              {% endif %}
+            </a>
+          </li>
+          <li>
+            <a class="" href="#">
+              <i class="material-icons notified">notifications_none</i>
+              {% if request.cookies.event_notifications %}
+              <small class="notification-badge">{{request.cookies.event_notifications}}</small>
+              {% else %}
+              <small class="notification-badge-empty">0</small>
+              {% endif %}
+            </a>
+          </li>
+          <li>
+            <a class="" href="#">
+              <i class="material-icons notified">account_box</i>
+            </a>
+          </li>
+          {% endif %}
         </ul>
       </div>
   </div>

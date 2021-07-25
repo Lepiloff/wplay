@@ -6,6 +6,7 @@ from db import metadata
 from .users import users
 
 
+# NOT USING NOW
 class NotificationStatus(enum.Enum):
     EVENT = 'EVENT'
     MESSAGE = 'MESSAGE'

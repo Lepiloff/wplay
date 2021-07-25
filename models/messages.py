@@ -1,10 +1,20 @@
 import enum
 
 from sqlalchemy import Table, Column, Integer, Boolean, \
-    ForeignKey, DateTime, sql, Text
+    ForeignKey, DateTime, sql, Text, Enum
 
 from db import metadata
 from .users import users
+
+
+class NotificationType(enum.Enum):
+    EVENT = 'EVENT'
+    MESSAGE = 'MESSAGE'
+    FRIENDSHIP = 'FRIENDSHIP'
+
+
+Column("type", Enum(NotificationType, values_callable=lambda obj: [e.value for e in obj]),
+       nullable=False),
 
 
 messages = Table(
@@ -15,6 +25,8 @@ messages = Table(
     Column("sender", ForeignKey(users.c.id, ondelete="SET NULL"), nullable=False),
     Column("recipient", ForeignKey(users.c.id, ondelete="SET NULL"), nullable=False),
     Column("created_at", DateTime(timezone=True), server_default=sql.func.now()),
+    Column("type", Enum(NotificationType, values_callable=lambda obj: [e.value for e in obj]),
+           nullable=False),
     Column(
         "is_read",
         Boolean(),

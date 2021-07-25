@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from db import database
-#from helpers.custom_middleware import rmq_consumer_middleware
+from helpers.middleware import add_user_data_to_request
 from models.users import users
 from routes import api_router
 from sessions.core.base import redis_cache
@@ -44,7 +44,7 @@ async def shutdown_event():
 
 
 # Custom middleware
-#app.middleware('http')(rmq_consumer_middleware)
+app.middleware('http')(add_user_data_to_request)
 
 # Custom endpoints
 app.include_router(api_router)
@@ -57,6 +57,7 @@ app.include_router(api_router)
 
 #TODO чекнуть может ли одна локация быть у разных ивентов (если это например спортцентр)
 #TODO почекать на удаление связанных таблиц (ONDELATE = ....)
+# TODO судя по этому https://fastapi.tiangolo.com/advanced/templates/  надо везде в использовать response_class=HTMLResponse
 
 
 

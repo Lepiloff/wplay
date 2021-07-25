@@ -20,7 +20,10 @@ class RedisCache:
         return await self.redis_cache.set(key, value)
 
     async def get(self, key):
-        return await self.redis_cache.get(key)
+        raw = await self.redis_cache.get(key)
+        # redis return bytes object, change this to clear data
+        return raw.decode('utf-8')
+
 
     async def close(self):
         self.redis_cache.close()
