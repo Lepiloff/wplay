@@ -6,13 +6,14 @@ from query import get_message_count
 class MessagesService:
 
     @staticmethod
-    async def create(sender, recipient, event):
+    async def create(sender, recipient, event_id, _type):
         query = messages.insert()
-        content = f'You are recieved invoice from user {sender} to join event {event}'
+        content = f'You are recieved invoice from user {sender} to join event {event_id}'
         values = {
             'recipient': recipient,
             'sender': sender,
-            'content': content
+            'content': content,
+            'type': _type,
         }
         return await database.execute(query=query, values=values)
 

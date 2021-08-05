@@ -58,7 +58,9 @@ app.include_router(api_router)
 #TODO чекнуть может ли одна локация быть у разных ивентов (если это например спортцентр)
 #TODO почекать на удаление связанных таблиц (ONDELATE = ....)
 # TODO судя по этому https://fastapi.tiangolo.com/advanced/templates/  надо везде в использовать response_class=HTMLResponse
-
+# TODO использовать UUIDField  в качестве адишников  в моделях
+# TODO добавить индексы в БД
+# TODO безопасность чекнуть, формы и прочее
 
 
 @app.post("/simple_users")
