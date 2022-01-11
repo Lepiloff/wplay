@@ -29,35 +29,38 @@
         </a>
 
         <ul class="right hide-on-med-and-down " >
-          <li><a href="#new-event-modal" class="btn modal-trigger">Создать</a></li>
-          <li><a href="#login-modal" class="btn purple modal-trigger">Login</a></li>
-          <li><a href="#signup-modal" class="btn purple modal-trigger">Sign up</a></li>
-          {% if request.cookies.event_notifications %}
-          <li>
-            <a class="" href="#">
-              <i class="material-icons notified ">group_add</i>
-              {% if request.cookies.friend_notifications %}
-              <small class="notification-badge">{{request.cookies.friend_notifications}}</small>
-              {% else %}
-              <small class="notification-badge-empty">0</small>
-              {% endif %}
-            </a>
-          </li>
-          <li>
-            <a class="" href="#">
-              <i class="material-icons notified">notifications_none</i>
-              {% if request.cookies.event_notifications %}
-              <small class="notification-badge">{{request.cookies.event_notifications}}</small>
-              {% else %}
-              <small class="notification-badge-empty">0</small>
-              {% endif %}
-            </a>
-          </li>
-          <li>
-            <a class="" href="#">
-              <i class="material-icons notified">account_box</i>
-            </a>
-          </li>
+          {% if not request.cookies.Authorization %}
+              <li><a href="#login-modal" class="btn purple modal-trigger">Log in</a></li>
+              <li><a href="#signup-modal" class="btn purple modal-trigger">Sign up</a></li>
+
+             {% else %}
+                <li><a href="#new-event-modal" class="btn modal-trigger">Создать</a></li>
+                <li><a href="{{ url_for('logout') }}" class="btn purple modal-trigger">Log out</a></li>
+                           <li>
+                <a class="" href="#">
+                  <i class="material-icons notified ">group_add</i>
+                  {% if request.cookies.friend_notifications %}
+                  <small class="notification-badge">{{request.cookies.friend_notifications}}</small>
+                  {% else %}
+                  <small class="notification-badge-empty">0</small>
+                  {% endif %}
+                </a>
+              </li>
+              <li>
+                <a class="" href="#">
+                  <i class="material-icons notified">notifications_none</i>
+                  {% if request.cookies.event_notifications %}
+                  <small class="notification-badge">{{request.cookies.event_notifications}}</small>
+                  {% else %}
+                  <small class="notification-badge-empty">0</small>
+                  {% endif %}
+                </a>
+              </li>
+              <li>
+                <a class="" href="#">
+                  <i class="material-icons notified">account_box</i>
+                </a>
+              </li>
           {% endif %}
         </ul>
       </div>
@@ -142,22 +145,23 @@
   <div class="modal-content">
     <h4>Account Login</h4>
     <p>Login to access your account dashboard</p>
-    <form>
+    <form action="{{ url_for('login')}}" method="POST">
       <div class="input-field">
-        <input type="email" id="_email">
+        <input type="email" name="username" id="_email">
         <label for="email">Email</label>
       </div>
       <div class="input-field">
-        <input type="password" id="_password" autocomplete="on">
+        <input type="password" name="password" id="_password" autocomplete="on">
         <label for="password">Password</label>
       </div>
+      <div class="modal-footer">
+          <div class="input-field col s6 ">
+              <button class="btn btn-small btn-register waves-effect waves-light right" type="submit" name="action">Sign in
+                <i class="fa fa-lock"></i>
+              </button>
+          </div>
+      </div>
     </form>
-  </div>
-  <div class="modal-footer">
-    <a href="#!" class="modal-action modal-close btn grey">
-      <i class="fa fa-sync"></i> Reset Password</a>
-    <a href="#!" class="modal-action modal-close btn purple">
-      <i class="fa fa-lock"></i> Login</a>
   </div>
 </div>
 

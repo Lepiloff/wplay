@@ -1,4 +1,4 @@
-from models.invites import event_invites
+from models.invites import event_invites, InviteStatus
 from models.messages import messages
 from models.notifications import notifications
 from services.notifications import NotificationsService
@@ -33,9 +33,13 @@ class InviteService:
         await MessagesService.create(from_user_id, to_user_id, event_id, EVENT)
         return invite
 
-    # async def send_request_for_invite(self, event_id, to_user_id, from_user_id):
-    #     print (event_id, to_user_id)
-    #     return event_id
+    @staticmethod
+    async def decline_invite(event_id):
+        query = event_invites.update().where(event_invites.c.id == event_id).values(status=InviteStatus.DECLINED)
+        await database.execute(query=query)
 
-    async def invite_processing(self):
-        pass
+    @staticmethod
+    async def accept_invite(event_id):
+        query = event_invites.update().where(event_invites.c.id == event_id).values(status=InviteStatus.ACCEPTED)
+        await database.execute(query=query)
+

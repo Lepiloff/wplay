@@ -1,20 +1,14 @@
-import asyncio
-import json
-
-
 from typing import List
 
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
+from starlette.responses import RedirectResponse
 
-# from broker.invites.event_invite_producer import CallPikaConnector
-from broker.core.utils import produce_topic_message
 from services.events import EventsService
 from services.events_invites import InviteService
 from services.activities import ActivityService
 from services.auth import get_current_user
-from schemas.event_schema import EventForm, EventJoinForm, EventBase, EventList, EventSingle
-from starlette.responses import RedirectResponse
+from schemas.event_schema import EventForm, EventBase, EventList, EventSingle
 
 
 router = APIRouter()
@@ -62,7 +56,6 @@ async def event(
         service: EventsService = Depends()
 ):
     event = await service.get(pk)
-    print (event)
     #TODO event отдает в юзере hashed_password , да и в принципе много лишней инфы, ебануть row sql напрашивается
     #TODO dont show join button if user joined yet
     return templates.TemplateResponse(
@@ -90,24 +83,41 @@ async def join_to_event(
     invite = await service.request_to_join(pk, creator_id, from_user_id)
     # TODO success messages with data from invite result
     # TODO possible to get all data info from invite variable ?
-    if invite:
-        data = {
-            'invite': invite,
-            'from_user_id': from_user_id,
-            'to_user_id': creator_id,
-            'message': 'You received join request to event: тест '
-        }
 
-        # Disable temporary
-        # message = json.dumps(data).encode('utf8')
-        # loop = asyncio.get_event_loop()
-        # asyncio.ensure_future(produce_topic_message(loop, event_creator_id, message))
+    message = 'Invite sending successfully' if invite else 'Invite was not send'
+    status = False if not invite else True
 
     return templates.TemplateResponse(
-        'event_invite.html',
+        'event.html',
         context={
             'request': request,
-            'result': event
-
+            'event': event,
+            'message': message,
+            'status': status
         }
     )
+
+
+@router.get('/invite/{pk}/decline')
+async def decline_event_invite(
+        request: Request,
+        pk: int,
+        user_id: str = Depends(get_current_user),
+        service: InviteService = Depends(),
+):
+    await service.decline_invite(pk)
+    redirect_url = request.url_for('user_profile', **{'pk': user_id})
+    return RedirectResponse(redirect_url)
+
+
+@router.get('/invite/{pk}/accept')
+async def accept_event_invite(
+        request: Request,
+        pk: int,
+        user_id: str = Depends(get_current_user),
+        service: InviteService = Depends(),
+):
+    await service.accept_invite(pk)
+    redirect_url = request.url_for('user_profile', **{'pk': user_id})
+    return RedirectResponse(redirect_url)
+

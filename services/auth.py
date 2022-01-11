@@ -31,7 +31,10 @@ async def get_current_user(request: Request):
 
 
 async def is_authenticated(request: Request):
+    print('Checking is_authenticated')
+    print(f'request.cookies: {request.cookies}')
     cookie_authorization: str = request.cookies.get("Authorization")
+    print(f'cookie_authorization: {cookie_authorization}')
     if not cookie_authorization:
         return
     session = await redis_cache.get(cookie_authorization)
@@ -94,6 +97,7 @@ class AuthService:
             headers={'WWW-Authenticate': 'Bearer'},
         )
         user = await self.get_user_by_email(email=email)
+        print(f'user: {user}')
         if not user:
             # TODO messages to user
             raise exception

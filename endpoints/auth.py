@@ -68,10 +68,14 @@ async def signup(
     # return response
 
 
-@router.post("/logout")
-async def route_logout_and_remove_cookie():
-    response = RedirectResponse(url="/")
+@router.get("/logout")
+async def logout():
+    print('Starting logout')
+    response = RedirectResponse(url="/", status_code= 302)
+    print(f'response: {response}')
     response.delete_cookie('Authorization')
+    response.delete_cookie('user_id')
+    response.delete_cookie('event_notifications')
     return response
 
 

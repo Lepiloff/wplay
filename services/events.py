@@ -57,8 +57,6 @@ class EventsService:
                   'location_id': int(location_id), 'activities_id': int(activity),
                   'is_private': is_private, 'start_date': start_date, 'start_time': start_time
                   }
-        print (values)
-        print (type(values["start_time"]))
         event_id = await database.execute(query=event_create, values=values)
         return dict(await database.fetch_one(get_event(event_id)))
     # TODO добавить update метод
