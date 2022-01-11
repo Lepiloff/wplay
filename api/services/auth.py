@@ -104,6 +104,7 @@ class AuthService:
             headers={'WWW-Authenticate': 'Bearer'},
         )
         user = dict(await self.get_user_by_email(email=email))
+        print(f'user: {user}')
         if not user:
             raise exception
         if not self.verify_password(password, user['hashed_password']):

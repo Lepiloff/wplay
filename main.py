@@ -61,9 +61,11 @@ app.include_router(api_router)
 # TODO использовать UUIDField  в качестве адишников  в моделях
 # TODO добавить индексы в БД
 # TODO безопасность чекнуть, формы и прочее
+#TODO в роутах вызов логики везде через try/except
 
 
 @app.post("/simple_users")
+# TODO тут за стиль переносов с тобой надо побазарить
 async def _users(request: Request, name: str = Form(...)):
     email, phone, surname, age, personal_info, hashed_password = \
         'email', 'phone', 'surname', 'age', 'personal_info', 'hashed_password'

@@ -20,4 +20,5 @@ class MessagesService:
     @staticmethod
     async def get_count(user_id):
         result = await database.fetch_one(query=get_message_count, values={'user_id': user_id})
+        print(f'Result {result}')
         return dict(result) if result else None
