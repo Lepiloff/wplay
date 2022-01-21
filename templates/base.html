@@ -30,12 +30,12 @@
 
         <ul class="right hide-on-med-and-down " >
           {% if not request.cookies.Authorization %}
-              <li><a href="#login-modal" class="btn purple modal-trigger">Log in</a></li>
-              <li><a href="#signup-modal" class="btn purple modal-trigger">Sign up</a></li>
+              <li><a href="#login-modal" class="btn-small purple modal-trigger">Log in</a></li>
+              <li><a href="#signup-modal" class="btn-small purple modal-trigger">Sign up</a></li>
 
              {% else %}
-                <li><a href="#new-event-modal" class="btn modal-trigger">Создать</a></li>
-                <li><a href="{{ url_for('logout') }}" class="btn purple modal-trigger">Log out</a></li>
+                <li><a href="#new-event-modal" class="btn-small modal-trigger">Создать</a></li>
+                <li><a href="{{ url_for('logout') }}" class="btn-small purple modal-trigger">Log out</a></li>
                            <li>
                 <a class="" href="#">
                   <i class="material-icons notified ">group_add</i>
@@ -228,6 +228,16 @@
   <div class="modal-content">
     <h4>Add new event</h4>
     <form action="{{ url_for('event_create')}}" method="POST">
+      <div class="row">
+        <div class="input-field col s6">
+          <input id="country" name="country" type="text" class="validate" required>
+          <label for="country">Country</label>
+        </div>
+        <div class="input-field col s6">
+          <input id="city" name="city" type="text" class="validate" required>
+          <label for="city">City</label>
+        </div>
+      </div>
       <div class="row">
         <div class="input-field col s6">
           <input id="street" name="street" type="text" class="validate" required>

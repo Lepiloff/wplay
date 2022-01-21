@@ -67,7 +67,9 @@ class AuthService:
 
     @classmethod
     async def get_user_by_email(cls, email: str):
+        print(f'Email query: {email}')
         query = users.select().where(users.c.email == email)
+        print(query)
         return await database.fetch_one(query)
 
     @classmethod
@@ -91,13 +93,14 @@ class AuthService:
             }
 
     async def authenticate_user(self, email: str, password: str):
+        print(email)
+        print(password)
         exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Incorrect email or password',
             headers={'WWW-Authenticate': 'Bearer'},
         )
         user = await self.get_user_by_email(email=email)
-        print(f'user: {user}')
         if not user:
             # TODO messages to user
             raise exception
