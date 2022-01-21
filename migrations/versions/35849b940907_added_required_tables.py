@@ -1,8 +1,8 @@
 """Added required tables
 
-Revision ID: d2803272bc0a
+Revision ID: 35849b940907
 Revises: 
-Create Date: 2021-04-04 15:16:36.751011
+Create Date: 2022-01-18 17:18:20.270581
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'd2803272bc0a'
+revision = '35849b940907'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -33,9 +33,10 @@ def upgrade():
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('lat', sa.Float(), nullable=False),
     sa.Column('long', sa.Float(), nullable=False),
-    sa.Column('city', sa.String(length=100), nullable=False),
-    sa.Column('street', sa.String(length=100), nullable=False),
-    sa.Column('building', sa.String(length=10), nullable=False),
+    sa.Column('country', sa.String(length=20), nullable=False),
+    sa.Column('city', sa.String(length=20), nullable=False),
+    sa.Column('street', sa.String(length=20), nullable=False),
+    sa.Column('building', sa.String(length=5), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('city', 'street', 'building', name='address')
     )
@@ -62,15 +63,14 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_table('accounts',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('name', sa.String(length=16), nullable=False),
-    sa.Column('surname', sa.String(length=16), nullable=False),
+    sa.Column('user_id', sa.Integer(), nullable=False),
+    sa.Column('name', sa.String(length=16), nullable=True),
+    sa.Column('surname', sa.String(length=16), nullable=True),
     sa.Column('age', sa.String(length=3), nullable=True),
     sa.Column('personal_info', sa.Text(), nullable=True),
     sa.Column('gender', sa.Enum('MALE', 'FEMALE', name='gender'), nullable=True),
-    sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
-    sa.PrimaryKeyConstraint('id')
+    sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('user_id')
     )
     op.create_table('events',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -78,6 +78,8 @@ def upgrade():
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('title', sa.String(length=100), nullable=False),
     sa.Column('content', sa.Text(), nullable=False),
+    sa.Column('start_date', sa.Date(), nullable=True),
+    sa.Column('start_time', sa.Time(), nullable=True),
     sa.Column('status', sa.Enum('OPEN', 'CLOSED', 'EXPIRE', name='status'), server_default='OPEN', nullable=False),
     sa.Column('is_active', sa.Boolean(), server_default=sa.text('true'), nullable=True),
     sa.Column('is_group', sa.Boolean(), server_default=sa.text('true'), nullable=True),
@@ -90,6 +92,16 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('location_id', 'id', name='event_location')
     )
+    op.create_table('friend_invites',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('from_user', sa.Integer(), nullable=False),
+    sa.Column('to_user', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('status', sa.Enum('CREATED', 'ACCEPTED', 'DECLINED', 'OUTDATED', name='invitestatus'), server_default='CREATED', nullable=False),
+    sa.ForeignKeyConstraint(['from_user'], ['users.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['to_user'], ['users.id'], ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('friends',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
@@ -100,12 +112,21 @@ def upgrade():
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('user_one_id', 'user_two_id', name='buddy')
     )
+    op.create_table('notifications',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('recipient', sa.Integer(), nullable=False),
+    sa.Column('type', sa.Enum('EVENT', 'MESSAGE', 'FRIENDSHIP', name='notificationstatus'), nullable=False),
+    sa.ForeignKeyConstraint(['recipient'], ['users.id'], ondelete='CASCADE'),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('event_invites',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('from_user', sa.Integer(), nullable=False),
     sa.Column('to_user', sa.Integer(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('to_event', sa.Integer(), nullable=False),
+    sa.Column('status', sa.Enum('CREATED', 'ACCEPTED', 'DECLINED', 'OUTDATED', name='invitestatus'), server_default='CREATED', nullable=False),
+    sa.Column('type', sa.Enum('INVITE', 'BET', name='invitetype'), nullable=False),
     sa.Column('is_active', sa.Boolean(), server_default=sa.text('true'), nullable=True),
     sa.ForeignKeyConstraint(['from_user'], ['users.id'], ondelete='SET NULL'),
     sa.ForeignKeyConstraint(['to_event'], ['events.id'], ondelete='CASCADE'),
@@ -133,15 +154,35 @@ def upgrade():
     sa.ForeignKeyConstraint(['to_user'], ['users.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id')
     )
+    op.create_table('messages',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('content', sa.Text(), nullable=False),
+    sa.Column('sender', sa.Integer(), nullable=False),
+    sa.Column('event', sa.Integer(), nullable=False),
+    sa.Column('event_invite', sa.Integer(), nullable=False),
+    sa.Column('recipient', sa.Integer(), nullable=False),
+    sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+    sa.Column('type', sa.Enum('EVENT', 'MESSAGE', 'FRIENDSHIP', name='notificationtype'), nullable=False),
+    sa.Column('is_read', sa.Boolean(), server_default=sa.text('false'), nullable=True),
+    sa.Column('trash', sa.Boolean(), server_default=sa.text('false'), nullable=True),
+    sa.ForeignKeyConstraint(['event'], ['events.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['event_invite'], ['event_invites.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['recipient'], ['users.id'], ondelete='SET NULL'),
+    sa.ForeignKeyConstraint(['sender'], ['users.id'], ondelete='SET NULL'),
+    sa.PrimaryKeyConstraint('id')
+    )
     # ### end Alembic commands ###
 
 
 def downgrade():
     # ### commands auto generated by Alembic - please adjust! ###
+    op.drop_table('messages')
     op.drop_table('feedbacks')
     op.drop_table('event_users')
     op.drop_table('event_invites')
+    op.drop_table('notifications')
     op.drop_table('friends')
+    op.drop_table('friend_invites')
     op.drop_table('events')
     op.drop_table('accounts')
     op.drop_table('account_activities_level')

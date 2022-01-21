@@ -11,6 +11,8 @@ from models.events import Status
 
 #TODO прочекать чтобы дата и время были не str а date time
 class EventForm(BaseModel):
+    country: str
+    city: str
     street: str
     house: str
     title: str
@@ -21,15 +23,18 @@ class EventForm(BaseModel):
     start_time: time
 
     @classmethod
-    def as_form(cls, street: str = Form(...), house: str = Form(...),
+    def as_form(cls, country: str = Form(...), city: str = Form(...),
+                street: str = Form(...), house: str = Form(...),
                 title: str = Form(...), description: str = Form(...),
                 activity: str = Form(...), is_private: bool = Form(False),
                 start_date: date = Form(...), start_time: time = Form(...)):
         return cls(
+            country=country, city=city,
             street=street, house=house, title=title,
             description=description, activity=activity,
             is_private=is_private, start_date=start_date,
-            start_time=start_time)
+            start_time=start_time
+        )
 
 
 class EventJoinForm(BaseModel):

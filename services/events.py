@@ -42,12 +42,12 @@ class EventsService:
             events.append(e)
         return events
 
-    async def post(self, user_id, street, house,
+    async def post(self, user_id, country, city, street, house,
                    title, content, activity,
                    is_private, start_date, start_time):
         # TODO  в transaction завернуть ?
-        lat, lon = get_coord(street, house)
-        values = {'city': get_city(), 'street': street,
+        lat, lon = get_coord(country, city, street, house)
+        values = {'country': country, 'city': city, 'street': street,
                   'house': house, 'lat': lat, 'long': lon
                   }
 

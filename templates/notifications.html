@@ -1,10 +1,38 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<p>glfdcpdsflsp</p>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="col s12">
+            <table class="responsive-table striped">
+                <tbody>
+                    {% for message in messages %}
+                      <tr>
+                        <td>{{ message.created_at }}</td>
+                        <td>{{ message.content}}</td>
+                        <td><a href="{{ url_for('user_profile', pk=message.sender) }}">Sender</a></td>
+                        <td><a href="{{ url_for('get_event', pk=message.event) }}">Event</a> </td>
+                        <td>
+                           <form action="{{ url_for('accept_event_invite', pk=message.event_invite) }}" method="POST">
+                                <button class="btn-small green lighten-2 link-button" type="submit" name="action">
+                                <i class="material-icons right">add_task</i>
+                                </button>
+                           </form>
+                        </td>
+                        <td>
+                            <form action="{{ url_for('decline_event_invite', pk=message.event_invite) }}" method="POST" >
+                                <button class="btn-small red lighten-2" type="submit" name="action">
+                                <i class="material-icons right">do_disturb</i>
+                                </button>
+                            </form>
+                        </td>
+                      </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock content %}

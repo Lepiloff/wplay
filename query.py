@@ -22,8 +22,8 @@ get_events = f"SELECT events.id, events.title, events.creator, events.content, e
            f"GROUP BY events.id "
 
 
-location_create = "INSERT INTO locations(city, street, building, lat, long) " \
-                  "VALUES (:city, :street, :house, :lat, :long ) RETURNING id"
+location_create = "INSERT INTO locations(country, city, street, building, lat, long) " \
+                  "VALUES (:country, :city, :street, :house, :lat, :long ) RETURNING id"
 
 
 event_create = "INSERT INTO events(creator, title, content, location_id, activities_id, start_date, start_time, is_private) " \

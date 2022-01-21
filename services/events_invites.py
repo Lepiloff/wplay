@@ -29,8 +29,7 @@ class InviteService:
     async def request_to_join(self, event_id, to_user_id, from_user_id):
         # TODO обернуть в транзакцию или в try
         invite = await InviteService.create(event_id, to_user_id, from_user_id)
-        # await NotificationsService.create(to_user_id, EVENT)
-        await MessagesService.create(from_user_id, to_user_id, event_id, EVENT)
+        await MessagesService.create(from_user_id, to_user_id, event_id, invite, EVENT)
         return invite
 
     @staticmethod

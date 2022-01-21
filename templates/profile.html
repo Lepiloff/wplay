@@ -71,16 +71,41 @@
                       <tr>
                         <td><a href="{{ url_for('user_profile', pk=invite.from_user) }}">Sender</a></td>
                         <td>{{ invite.created_at }}</td>
-                        <td><a href="{{ url_for('event', pk=invite.to_event) }}">Event</a></td>
+                        <td><a href="{{ url_for('get_event', pk=invite.to_event) }}">Event</a></td>
+
                         {% if invite.status == invite_status.CREATED %}
-                            <td><a href="{{ url_for('accept_event_invite', pk=invite.id) }}" class="btn blue lighten-2">Accept</a></td>
-                            <td><a href="{{ url_for('decline_event_invite', pk=invite.id) }}" class="btn red lighten-2">Decline</a></td>
+                            <td>
+                                <form action="{{ url_for('accept_event_invite', pk=invite.id) }}" method="POST">
+                                    <button class="btn-small green lighten-2" type="submit" name="action">
+                                    <i class="material-icons right">add_task</i>
+                                    </button>
+                                </form>
+                            </td>
+                            <td>
+                                <form action="{{ url_for('decline_event_invite', pk=invite.id) }}" method="POST" >
+                                    <button class="btn-small red lighten-2" type="submit" name="action">
+                                    <i class="material-icons right">do_disturb</i>
+                                    </button>
+                               </form>
+                            </td>
+
                         {% elif invite.status == invite_status.ACCEPTED %}
-                            <td><a href="{{ url_for('decline_event_invite', pk=invite.id) }}" class="btn red lighten-2">Decline</a></td>
+                            <td>
+                                <form action="{{ url_for('decline_event_invite', pk=invite.id) }}" method="POST" >
+                                    <button class="btn-small red lighten-2" type="submit" name="action">
+                                    <i class="material-icons right">do_disturb</i>
+                                    </button>
+                                </form>
+                            </td>
                         {% elif invite.status == invite_status.DECLINED %}
-                            <td><a href="{{ url_for('accept_event_invite', pk=invite.id) }}" class="btn blue lighten-2">Accept</a></td>
+                            <td>
+                                <form action="{{ url_for('accept_event_invite', pk=invite.id) }}" method="POST">
+                                    <button class="btn-small green lighten-2" type="submit" name="action">
+                                    <i class="material-icons right">add_task</i>
+                                    </button>
+                                </form>
+                            </td>
                           {% endif %}
-                        <td></td>
                       </tr>
                     {% endfor %}
                 </tbody>

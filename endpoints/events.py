@@ -3,12 +3,14 @@ from typing import List
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
+import starlette.status as status
 
 from services.events import EventsService
 from services.events_invites import InviteService
 from services.activities import ActivityService
 from services.auth import get_current_user
 from schemas.event_schema import EventForm, EventBase, EventList, EventSingle
+from helpers.map import Map
 
 
 router = APIRouter()
@@ -23,20 +25,27 @@ async def events_list(
 ):
     ev = await service.get_list()
     activity = await activity_service.get()
-    return templates.TemplateResponse('events.html', context={'request': request,
-                                                              'activities': activity,
-                                                              'result': ev})
+    return templates.TemplateResponse('events.html',
+                                      context={
+                                          'request': request,
+                                          'activities': activity,
+                                          'result': ev
+                                      }
+                                      )
 
 
-@router.post('/', response_model=EventBase)
+@router.post('/create', response_model=EventBase)
 async def event_create(
         request: Request,
         user_id: str = Depends(get_current_user),
         service: EventsService = Depends(),
         form: EventForm = Depends(EventForm.as_form)
 ):
+    # TODO event возвращает дикт хотя в запросе указано вернуть id
     event = await service.post(
         user_id,
+        form.country,
+        form.city,
         form.street,
         form.house,
         form.title,
@@ -46,16 +55,21 @@ async def event_create(
         form.start_date,
         form.start_time
    )
-    return templates.TemplateResponse('event.html', context={'request': request, 'event': event})
+    redirect_url = request.url_for('get_event', **{'pk': event['id']})
+    return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get('/{pk}', response_model=EventSingle)
-async def event(
+async def get_event(
         request: Request,
         pk: int,
         service: EventsService = Depends()
 ):
     event = await service.get(pk)
+    tooltip = event['activity']['name']
+    popup = event['title']
+    event_coordinate = (event['location']['lat'], event['location']['long'])
+    m = Map(event_coordinate, 15, popup, tooltip).show_map()
     #TODO event отдает в юзере hashed_password , да и в принципе много лишней инфы, ебануть row sql напрашивается
     #TODO dont show join button if user joined yet
     return templates.TemplateResponse(
@@ -63,13 +77,14 @@ async def event(
         context=
         {
             'request': request,
-            'event': event
+            'event': event,
+            'm': m._repr_html_(),
         }
     )
 
 
 #TODO response_model ?
-@router.post('/{pk}')
+@router.post('/{pk}/join')
 async def join_to_event(
         request: Request,
         pk: int,
@@ -80,25 +95,15 @@ async def join_to_event(
     #TODO  dont send invite to himself
     event = await event_service.get(pk)
     creator_id = event['creator']
-    invite = await service.request_to_join(pk, creator_id, from_user_id)
+    await service.request_to_join(pk, creator_id, from_user_id)
     # TODO success messages with data from invite result
     # TODO possible to get all data info from invite variable ?
 
-    message = 'Invite sending successfully' if invite else 'Invite was not send'
-    status = False if not invite else True
-
-    return templates.TemplateResponse(
-        'event.html',
-        context={
-            'request': request,
-            'event': event,
-            'message': message,
-            'status': status
-        }
-    )
+    redirect_url = request.url_for('get_event', **{'pk': event['id']})
+    return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.get('/invite/{pk}/decline')
+@router.post('/invite/{pk}/decline')
 async def decline_event_invite(
         request: Request,
         pk: int,
@@ -107,10 +112,10 @@ async def decline_event_invite(
 ):
     await service.decline_invite(pk)
     redirect_url = request.url_for('user_profile', **{'pk': user_id})
-    return RedirectResponse(redirect_url)
+    return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.get('/invite/{pk}/accept')
+@router.post('/invite/{pk}/accept')
 async def accept_event_invite(
         request: Request,
         pk: int,
@@ -119,5 +124,5 @@ async def accept_event_invite(
 ):
     await service.accept_invite(pk)
     redirect_url = request.url_for('user_profile', **{'pk': user_id})
-    return RedirectResponse(redirect_url)
+    return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
