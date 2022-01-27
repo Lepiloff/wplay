@@ -1,6 +1,5 @@
-import ast
 import json
-
+from typing import Dict
 from sqlalchemy import select, desc, column, func, table, and_, text
 
 from fastapi import HTTPException
@@ -15,18 +14,13 @@ from query import get_event, get_events, location_create, event_create, event_us
 
 
 class EventsService:
-    EVENT_CONTENT = ('location', 'activity')
 
     async def get(self, pk: int):
-        # TODO убрать из query файла SQL запрс в виде функции и заменить на  передачу параметров с помощью ":"
-        result = await database.fetch_one(text(get_event(pk)))
+        result = await database.fetch_one(query=get_event, values={'pk': pk})
         if result is None:
             raise HTTPException(status_code=404, detail="Events not found")
         event = dict(result.items())
-        # event['location'] = ast.literal_eval(event['location'])
-        # event['activity'] = ast.literal_eval(event['activity'])
-        event['location'] = json.loads(event['location'])
-        event['activity'] = json.loads(event['activity'])
+        event = self.perform_data(event)
         return event
 
     async def get_list(self):
@@ -34,13 +28,7 @@ class EventsService:
         if db_result is None:
             raise HTTPException(status_code=404, detail="Events not found")
         result = ([dict(r.items()) for r in db_result])
-        events = []
-        for event in result:
-            #TODO вынести список атрибутов event в отдельную константу
-            # e = {k: ast.literal_eval(v) if k in ('location', 'activity') else v for k, v in event.items()}
-            e = {k: json.loads(v) if k in ('location', 'activity') else v for k, v in event.items()}
-            events.append(e)
-        return events
+        return list(map(self.perform_data, result))
 
     async def post(self, user_id, country, city, street, house,
                    title, content, activity,
@@ -61,3 +49,16 @@ class EventsService:
         return dict(await database.fetch_one(get_event(event_id)))
     # TODO добавить update метод
 
+    @staticmethod
+    def perform_data(data: Dict):
+        """
+        Response from DB came as a json, rewrite it to dict for template using
+        """
+        data_for_perform = ('location', 'activity', 'creator')
+        ready_data = {
+            key: json.loads(value)
+            if key in data_for_perform
+            else value for key, value
+            in data.items()
+        }
+        return ready_data

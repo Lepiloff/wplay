@@ -17,7 +17,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
-@router.get('/', response_model=List[EventList])
+@router.get('/all', response_model=List[EventList])
 async def events_list(
         request: Request,
         service: EventsService = Depends(),
@@ -70,7 +70,6 @@ async def get_event(
     popup = event['title']
     event_coordinate = (event['location']['lat'], event['location']['long'])
     m = Map(event_coordinate, 15, popup, tooltip).show_map()
-    #TODO event отдает в юзере hashed_password , да и в принципе много лишней инфы, ебануть row sql напрашивается
     #TODO dont show join button if user joined yet
     return templates.TemplateResponse(
         'event.html',
