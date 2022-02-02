@@ -22,7 +22,7 @@
         </div>
             {% endif %}
 
-            <div class="col s12 m6">
+        <div class="col s12 m6">
            {{ m | safe  }}
         </div>
 
@@ -55,6 +55,7 @@
         </div>
         <div class="col s12 m6">
           <br>
+        <time>17th March</time>
           {{ event.activity.name}}
           {% if request.cookies.Authorization %}
           <p>Request cookies</p>
@@ -113,50 +114,19 @@
                   </tr>
                 </thead>
                 <tbody>
+                {% for member in  event.members %}
                   <tr>
                     <td width="70">
                       <img class="responsive-img" src="{{ url_for('static', path='img/6517.svg') }}" alt="">
                     </td>
-                    <td>John Doe</td>
+                    <td>{{ member.name + ' ' + member.surname }}</td>
                     <td>jdoe@gmail.com</td>
                     <td>Jan, 1 2018</td>
                     <td>
                       <a href="details.html" class="btn blue lighten-2">Details</a>
                     </td>
                   </tr>
-                  <tr>
-                    <td width="70">
-                      <img class="responsive-img" src="{{ url_for('static', path='img/6517.svg') }}" alt="">
-                    </td>
-                    <td>Larry Watters</td>
-                    <td>lwatters@gmail.com</td>
-                    <td>Jan, 3 2018</td>
-                    <td>
-                      <a href="details.html" class="btn blue lighten-2">Details</a>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td width="70">
-                      <img class="responsive-img" src="{{ url_for('static', path='img/6517.svg') }}" alt="">
-                    </td>
-                    <td>Susan Williams</td>
-                    <td>susan@gmail.com</td>
-                    <td>Jan, 5 2018</td>
-                    <td>
-                      <a href="details.html" class="btn blue lighten-2">Details</a>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td width="70">
-                      <img class="responsive-img" src="{{ url_for('static', path='img/6517.svg') }}" alt="">
-                    </td>
-                    <td>Jeff Burke</td>
-                    <td>jburke@gmail.com</td>
-                    <td>Jan, 10 2018</td>
-                    <td>
-                      <a href="details.html" class="btn blue lighten-2">Details</a>
-                    </td>
-                  </tr>
+                {% endfor %}
                 </tbody>
               </table>
             </div>

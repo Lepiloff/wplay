@@ -7,7 +7,6 @@ import starlette.status as status
 
 from services.events import EventsService
 from services.events_invites import InviteService
-from services.activities import ActivityService
 from services.auth import get_current_user
 from schemas.event_schema import EventForm, EventBase, EventList, EventSingle
 from helpers.map import Map
@@ -21,15 +20,19 @@ templates = Jinja2Templates(directory="templates")
 async def events_list(
         request: Request,
         service: EventsService = Depends(),
-        activity_service: ActivityService = Depends()
 ):
-    ev = await service.get_list()
-    activity = await activity_service.get()
+    events = await service.get_list()
+    # TODO возможно из эндпоинта стоит вынести логику в сервис
+    events_data = [
+        (event['id'], event['title'], event['location']['lat'], event['location']['long'], event['activity']['name'])
+        for event in events
+    ]
+    m = Map().show_events(events_data)
     return templates.TemplateResponse('events.html',
                                       context={
                                           'request': request,
-                                          'activities': activity,
-                                          'result': ev
+                                          'events': events,
+                                          'm': m._repr_html_(),
                                       }
                                       )
 
@@ -66,10 +69,11 @@ async def get_event(
         service: EventsService = Depends()
 ):
     event = await service.get(pk)
+    # TODO возможно из эндпоинта стоит вынести логику в сервис
     tooltip = event['activity']['name']
     popup = event['title']
     event_coordinate = (event['location']['lat'], event['location']['long'])
-    m = Map(event_coordinate, 15, popup, tooltip).show_map()
+    m = Map(event_coordinate, 15, popup, tooltip).show_event()
     #TODO dont show join button if user joined yet
     return templates.TemplateResponse(
         'event.html',

@@ -2,42 +2,47 @@
 
 # Events
 
-#TODO add events memebers
-
 get_event = """
-    SELECT
-        events.id, events.title, events.creator, events.content, events.status,
-        (json_agg(json_build_object('city', locations.city, 'street', locations.street,
-        'building', locations.building, 'lat', locations.lat, 'long', locations.long)) -> 0)AS location,
-        (json_agg(json_build_object('id', activities.id, 'name', activities.name)) -> 0) AS activity,
-        (json_agg(json_build_object('name', accounts.name, 'surname', accounts.surname)) -> 0) AS creator
-    FROM
-        events
-    JOIN
-        locations ON events.location_id=locations.id
-    JOIN
-        activities ON events.activities_id=activities.id
-    JOIN
-        accounts ON events.creator=accounts.user_id
-    WHERE events.id = :pk GROUP BY events.id
+SELECT
+    events.id, events.title, events.creator, events.content, events.status,
+    (json_agg(json_build_object('city', locations.city, 'street', locations.street,
+    'building', locations.building, 'lat', locations.lat, 'long', locations.long)) -> 0) AS location,
+    (json_agg(json_build_object('id', activities.id, 'name', activities.name)) -> 0) AS activity,
+    (json_agg(json_build_object('name', a.name, 'surname', a.surname)) -> 0) AS creator,
+    case when count(m.user_id) = 0 then '[]' 
+    else json_agg(json_build_object('id', m.user_id, 'name', m.name, 'surname', m.surname)) end members
+FROM
+    events
+INNER JOIN
+    locations ON events.location_id=locations.id
+INNER JOIN
+    activities ON events.activities_id=activities.id
+INNER JOIN 
+    accounts a ON  events.creator=a.user_id
+LEFT JOIN (
+  SELECT events_id AS id, 
+          a.user_id,
+          a.name,
+          a.surname
+  FROM event_users e
+  INNER JOIN accounts a ON a.user_id = e.users_id
+) m ON m.id = events.id
+WHERE events.id = :pk 
+GROUP BY events.id, events.title, events.creator, events.content, events.status
 """
-
 
 get_events = """
     SELECT 
         events.id, events.title, events.content, events.status, 
         (json_agg(json_build_object('city', locations.city, 'street', locations.street,
         'building', locations.building, 'lat', locations.lat, 'long', locations.long)) -> 0)AS location ,
-        (json_agg(json_build_object('id', activities.id, 'name', activities.name)) -> 0) AS activity,
-        (json_agg(json_build_object('name', accounts.name, 'surname', accounts.surname)) -> 0) AS creator
+        (json_agg(json_build_object('id', activities.id, 'name', activities.name)) -> 0) AS activity
     FROM 
         events  
     JOIN 
         locations  ON events.location_id=locations.id
     JOIN 
         activities  ON events.activities_id=activities.id
-    JOIN
-        accounts ON events.creator=accounts.user_id
     GROUP BY events.id
 """
 
@@ -68,6 +73,4 @@ get_message_count = "SELECT COUNT(*) AS TOTAL, " \
         "(SELECT COUNT(*) FROM messages WHERE type='FRIENDSHIP' AND messages.recipient = :user_id AND messages.is_read is False) AS friends, " \
         "(SELECT COUNT(*) FROM messages WHERE type='EVENT' AND messages.recipient = :user_id  AND messages.is_read is False) AS events " \
         "FROM messages WHERE messages.recipient = :user_id GROUP BY messages.recipient"
-
-
 

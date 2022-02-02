@@ -1,44 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Sample Form</title>
-</head>
-<body>
-<form method="post">
-    <p>
-    <label for="street">Street</label><br>
-    <input type="text" name="street" value=""/>
-    </p>
-    <p>
-    <label for="house">House</label><br>
-    <input type="text" name="house" value=""/>
-    </p>
-    <p>
-    <label for="title">Title</label><br>
-    <input type="text" name="title" value=""/>
-    </p>
-    <p>
-    <label for="content">Content</label><br>
-    <input type="text" name="content" value=""/>
-    </p>
-    <p>
-    <label for="activities">Activities</label><br>
-    <select id="activity" name="activity">
-    {% for activity in activities %}
-       <option value="{{ activity.id }}">
-        {{ activity.name }}
-       </option>
-    {% endfor %}
-    </select>
-    </p>
-    <input type="submit" value="Add new">
-</form>
+{% extends "base.html" %}
 
-<p>Result:</p>
+{% block content %}
 
-<p>{{result.event}}</p>
+<div class="container">
+        <div class="col s12 m6">
+           {{ m | safe  }}
+        </div>
+    <div class="row">
+        <div class="col s12">
+            <table class="responsive-table striped">
+                <tbody>
+                    {% for event in events %}
+                      <tr>
+                        <td>{{ event.title }}</td>
+                        <td>{{ event.content}}</td>
+                      </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-
-</body>
-</html>
+{% endblock content %}

@@ -1,15 +1,10 @@
 import json
 from typing import Dict
-from sqlalchemy import select, desc, column, func, table, and_, text
 
 from fastapi import HTTPException
 
 from db import database
 from helpers.utils import get_city, get_coord
-from models.users import users
-from models.events import events
-from models.locations import locations
-from models.activities import activities
 from query import get_event, get_events, location_create, event_create, event_user_create
 
 
@@ -17,11 +12,11 @@ class EventsService:
 
     async def get(self, pk: int):
         result = await database.fetch_one(query=get_event, values={'pk': pk})
+        print(f'result: {result}')
         if result is None:
-            raise HTTPException(status_code=404, detail="Events not found")
+            raise HTTPException(status_code=404, detail="Event not found")
         event = dict(result.items())
-        event = self.perform_data(event)
-        return event
+        return self.perform_data(event)
 
     async def get_list(self):
         db_result = await database.fetch_all(get_events)
@@ -54,10 +49,10 @@ class EventsService:
         """
         Response from DB came as a json, rewrite it to dict for template using
         """
-        data_for_perform = ('location', 'activity', 'creator')
+        key_for_perform = ('location', 'activity', 'creator', 'members')
         ready_data = {
             key: json.loads(value)
-            if key in data_for_perform
+            if key in key_for_perform
             else value for key, value
             in data.items()
         }
