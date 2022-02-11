@@ -17,13 +17,18 @@ class RedisCache:
     async def keys(self, pattern):
         return await self.redis_cache.keys(pattern)
 
-    async def set(self, key, value):
-        return await self.redis_cache.set(key, value)
+    async def set(self, key, value, ex=None):
+        return await self.redis_cache.set(key, value, ex=ex)
 
     async def get(self, key):
         raw = await self.redis_cache.get(key)
+        if not raw:
+            return
         # redis return bytes object, change this to clear data
         return raw.decode('utf-8')
+
+    async def delete(self, key):
+        await self.redis_cache.delete(key)
 
     async def close(self):
         await self.redis_cache.close()

@@ -69,21 +69,21 @@
                 <tbody>
                     {% for invite in events_invites %}
                       <tr>
-                        <td><a href="{{ url_for('user_profile', pk=invite.from_user) }}">Sender</a></td>
+                        <td><a href="{{ url_for('user_profile', pk=invite.from_user) }}">{{ invite.name + ' ' + invite.surname }}</a></td>
                         <td>{{ invite.created_at }}</td>
-                        <td><a href="{{ url_for('get_event', pk=invite.to_event) }}">Event</a></td>
+                        <td><a href="{{ url_for('get_event', pk=invite.to_event) }}">{{ invite.title }}</a></td>
 
                         {% if invite.status == invite_status.CREATED %}
                             <td>
-                                <form action="{{ url_for('accept_event_invite', pk=invite.id) }}" method="POST">
-                                    <button class="btn-small green lighten-2" type="submit" name="action">
+                                <form action="{{ CustomURLProcessor().url_for(request, 'accept_event_invite').include_query_params(event=invite.to_event, event_invites = invite.id, sender=invite.from_user) }}" method="POST">
+                                    <button class="btn-floating green lighten-2" type="submit" name="action">
                                     <i class="material-icons right">add_task</i>
                                     </button>
                                 </form>
                             </td>
                             <td>
-                                <form action="{{ url_for('decline_event_invite', pk=invite.id) }}" method="POST" >
-                                    <button class="btn-small red lighten-2" type="submit" name="action">
+                                <form action="{{ CustomURLProcessor().url_for(request, 'decline_event_invite').include_query_params(event=invite.to_event, event_invite=invite.id, sender=invite.from_user) }}" method="POST" >
+                                    <button class="btn-floating red lighten-2" type="submit" name="action">
                                     <i class="material-icons right">do_disturb</i>
                                     </button>
                                </form>
@@ -91,19 +91,25 @@
 
                         {% elif invite.status == invite_status.ACCEPTED %}
                             <td>
-                                <form action="{{ url_for('decline_event_invite', pk=invite.id) }}" method="POST" >
-                                    <button class="btn-small red lighten-2" type="submit" name="action">
+                              <a class="btn-floating disabled"><i class="material-icons">add_task</i></a>
+                            </td>
+                            <td>
+                                <form action="{{ CustomURLProcessor().url_for(request, 'decline_event_invite').include_query_params(event=invite.to_event, event_invite=invite.id, sender=invite.from_user) }}" method="POST" >
+                                    <button class="btn-floating red lighten-2" type="submit" name="action">
                                     <i class="material-icons right">do_disturb</i>
                                     </button>
                                 </form>
                             </td>
                         {% elif invite.status == invite_status.DECLINED %}
                             <td>
-                                <form action="{{ url_for('accept_event_invite', pk=invite.id) }}" method="POST">
-                                    <button class="btn-small green lighten-2" type="submit" name="action">
+                                <form action="{{ CustomURLProcessor().url_for(request, 'accept_event_invite').include_query_params(event=invite.to_event, event_invites = invite.id, sender=invite.from_user) }}" method="POST">
+                                    <button class="btn-floating green lighten-2" type="submit" name="action">
                                     <i class="material-icons right">add_task</i>
                                     </button>
                                 </form>
+                            </td>
+                            <td>
+                              <a class="btn-floating disabled"><i class="material-icons">do_disturb</i></a>
                             </td>
                           {% endif %}
                       </tr>

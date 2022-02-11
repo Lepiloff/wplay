@@ -2,24 +2,38 @@
 
 {% block content %}
 
-<div class="container">
+<section id="map" class="section">
+    <div class="container">
         <div class="col s12 m6">
            {{ m | safe  }}
         </div>
-    <div class="row">
+    </div>
+</section>
+
+</section id="map" class="section">
+    <div class="container">
         <div class="col s12">
             <table class="responsive-table striped">
+                <thead>
+                  <tr>
+                    <th><i class="material-icons">content_paste</i></th>
+                    <th><i class="material-icons">directions_run</i></th>
+                    <th><i class="material-icons">today</i></th>
+                    <th><i class="material-icons">access_time</i></th>
+                  </tr>
+                </thead>
                 <tbody>
                     {% for event in events %}
                       <tr>
                         <td>{{ event.title }}</td>
-                        <td>{{ event.content}}</td>
+                        <td>{{ event.activity.name}}</td>
+                        <td>{{ event.start_date}}</td>
+                        <td>{{ event.start_time.strftime('%H: %M')}}</td>
                       </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
-</div>
-
+</section>
 {% endblock content %}

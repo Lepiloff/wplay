@@ -12,7 +12,6 @@ class EventsService:
 
     async def get(self, pk: int):
         result = await database.fetch_one(query=get_event, values={'pk': pk})
-        print(f'result: {result}')
         if result is None:
             raise HTTPException(status_code=404, detail="Event not found")
         event = dict(result.items())
@@ -26,7 +25,7 @@ class EventsService:
         return list(map(self.perform_data, result))
 
     async def post(self, user_id, country, city, street, house,
-                   title, content, activity,
+                   title, content, activity, members_count,
                    is_private, start_date, start_time):
         # TODO  в transaction завернуть ?
         lat, lon = get_coord(country, city, street, house)
@@ -36,20 +35,20 @@ class EventsService:
 
         #TODO не создавать а возвращать локацию если такая уже существует
         location_id = await database.execute(query=location_create, values=values)
-        values = {'creator': user_id, 'title': title, 'content': content,
-                  'location_id': int(location_id), 'activities_id': int(activity),
-                  'is_private': is_private, 'start_date': start_date, 'start_time': start_time
+        values = {
+            'creator': user_id, 'title': title, 'content': content,
+            'location_id': int(location_id), 'activities_id': int(activity), 'members_count': members_count,
+            'is_private': is_private, 'start_date': start_date, 'start_time': start_time
                   }
         event_id = await database.execute(query=event_create, values=values)
-        return dict(await database.fetch_one(get_event(event_id)))
-    # TODO добавить update метод
+        return event_id
 
     @staticmethod
     def perform_data(data: Dict):
         """
         Response from DB came as a json, rewrite it to dict for template using
         """
-        key_for_perform = ('location', 'activity', 'creator', 'members')
+        key_for_perform = ('location', 'activity', 'creator_info', 'members')
         ready_data = {
             key: json.loads(value)
             if key in key_for_perform

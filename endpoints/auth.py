@@ -12,9 +12,9 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
-@router.get('/login')
-async def login(request: Request):
-    return templates.TemplateResponse('sign_in.html', context={'request': request})
+# @router.get('/login')
+# async def login(request: Request):
+#     return templates.TemplateResponse('sign_in.html', context={'request': request})
 
 
 @router.post('/login')
@@ -34,15 +34,14 @@ async def login(
         max_age=1800,
         expires=1800,
     )
-    # TODO set expired time equal response cookie
-    await redis_cache.set(session['session_id'], json.dumps(session['session_data']))
+    await redis_cache.set(session['session_id'], json.dumps(session['session_data']), ex=1800)
     response.status_code = 302
     return response
 
 
-@router.get('/registrations')
-async def signup(request: Request):
-    return templates.TemplateResponse('sign_up.html', context={'request': request})
+# @router.get('/registrations')
+# async def signup(request: Request):
+#     return templates.TemplateResponse('sign_up.html', context={'request': request})
 
 
 @router.post('/registrations')
@@ -70,9 +69,7 @@ async def signup(
 
 @router.get("/logout")
 async def logout():
-    print('Starting logout')
-    response = RedirectResponse(url="/", status_code= 302)
-    print(f'response: {response}')
+    response = RedirectResponse(url="/", status_code=302)
     response.delete_cookie('Authorization')
     response.delete_cookie('user_id')
     response.delete_cookie('event_notifications')

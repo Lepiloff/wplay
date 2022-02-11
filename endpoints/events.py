@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
@@ -22,19 +22,22 @@ async def events_list(
         service: EventsService = Depends(),
 ):
     events = await service.get_list()
-    # TODO возможно из эндпоинта стоит вынести логику в сервис
     events_data = [
-        (event['id'], event['title'], event['location']['lat'], event['location']['long'], event['activity']['name'])
+        (
+            event['id'], event['title'], event['location']['lat'],
+            event['location']['long'], event['activity']['name']
+        )
         for event in events
     ]
-    m = Map().show_events(events_data)
-    return templates.TemplateResponse('events.html',
-                                      context={
-                                          'request': request,
-                                          'events': events,
-                                          'm': m._repr_html_(),
-                                      }
-                                      )
+    m = Map(zoom_start=11).show_events(events_data)
+    return templates.TemplateResponse(
+        'events.html',
+        context={
+            'request': request,
+            'events': events,
+            'm': m._repr_html_(),
+        }
+        )
 
 
 @router.post('/create', response_model=EventBase)
@@ -44,8 +47,7 @@ async def event_create(
         service: EventsService = Depends(),
         form: EventForm = Depends(EventForm.as_form)
 ):
-    # TODO event возвращает дикт хотя в запросе указано вернуть id
-    event = await service.post(
+    event_id = await service.post(
         user_id,
         form.country,
         form.city,
@@ -54,11 +56,12 @@ async def event_create(
         form.title,
         form.description,
         form.activity,
+        form.members_count,
         form.is_private,
         form.start_date,
         form.start_time
-   )
-    redirect_url = request.url_for('get_event', **{'pk': event['id']})
+    )
+    redirect_url = request.url_for('get_event', **{'pk': event_id})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
@@ -69,16 +72,15 @@ async def get_event(
         service: EventsService = Depends()
 ):
     event = await service.get(pk)
-    # TODO возможно из эндпоинта стоит вынести логику в сервис
     tooltip = event['activity']['name']
     popup = event['title']
     event_coordinate = (event['location']['lat'], event['location']['long'])
     m = Map(event_coordinate, 15, popup, tooltip).show_event()
     #TODO dont show join button if user joined yet
+    templates = Jinja2Templates(directory="templates")
     return templates.TemplateResponse(
         'event.html',
-        context=
-        {
+        context={
             'request': request,
             'event': event,
             'm': m._repr_html_(),
@@ -106,26 +108,30 @@ async def join_to_event(
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.post('/invite/{pk}/decline')
+@router.post('/invite/decline')
 async def decline_event_invite(
         request: Request,
-        pk: int,
+        event: int,
+        event_invite: int,
+        sender: int,
         user_id: str = Depends(get_current_user),
         service: InviteService = Depends(),
 ):
-    await service.decline_invite(pk)
+    await service.decline_invite(event, event_invite, sender)
     redirect_url = request.url_for('user_profile', **{'pk': user_id})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.post('/invite/{pk}/accept')
+@router.post('/invite/accept')
 async def accept_event_invite(
         request: Request,
-        pk: int,
+        event: int,
+        event_invites: int,
+        sender: int,
         user_id: str = Depends(get_current_user),
         service: InviteService = Depends(),
 ):
-    await service.accept_invite(pk)
+    await service.accept_invite(event, event_invites, sender)
     redirect_url = request.url_for('user_profile', **{'pk': user_id})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 

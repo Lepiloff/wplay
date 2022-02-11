@@ -1,5 +1,6 @@
 import math
 import asyncio
+import urllib
 
 import folium
 import geocoder
@@ -14,7 +15,6 @@ from helpers.middleware import add_user_data_to_request
 from models.users import users
 from routes import api_router
 from sessions.core.base import redis_cache
-
 
 app = FastAPI()
 

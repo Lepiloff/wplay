@@ -2,6 +2,8 @@ from sqlalchemy import select
 
 from models.users import accounts
 from models.messages import messages
+from models.invites import event_invites
+from models.events import events
 from db import database
 from query import get_message_count
 from helpers.constants import Messages
@@ -29,10 +31,13 @@ class MessagesService:
 
     @staticmethod
     async def get_messages(user_id):
-        user_message = messages.join(accounts, messages.c.sender == accounts.c.user_id)
+        event_invite = messages.join(
+            accounts, messages.c.sender == accounts.c.user_id).join(
+            event_invites, messages.c.event_invite == event_invites.c.id
+        ).join(events, messages.c.event == events.c.id)
         query = select(
             [messages.c.sender, messages.c.event, messages.c.content,
-             messages.c.created_at, messages.c.event_invite, accounts.c.name, accounts.c.surname]
-        ).select_from(user_message).where(messages.c.recipient == user_id)
+             messages.c.created_at, messages.c.event_invite, event_invites.c.status, events.c.title, accounts.c.name, accounts.c.surname]
+        ).select_from(event_invite).where(messages.c.recipient == user_id).where(~messages.c.is_read)
         result = await database.fetch_all(query=query)
         return [dict(r.items()) for r in result] if result else None

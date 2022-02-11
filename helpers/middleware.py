@@ -18,7 +18,6 @@ async def add_user_data_to_request(request: Request, call_next, ):
             expires=60,
         )
         notifications = await MessagesService.get_count(user)
-        print(f'Notifications: {notifications}')
         if notifications:
             # add notification to response
             response.set_cookie(

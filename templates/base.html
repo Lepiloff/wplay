@@ -271,7 +271,7 @@
         </div>
       </div>
       <div class="row">
-        <div class="input-field col s6">
+        <div class="input-field col s4">
             <select id="activity" name="activity">
                 <option value="" disabled selected >Choose your option</option>
                 {% for activity in activities %}
@@ -282,7 +282,18 @@
             </select>
             <label for="activity">Activities</label>
         </div>
-        <div class="input-field col s6 center-align">
+        <div class="input-field col s4">
+            <select id="members_count" name="members_count">
+                <option value="" disabled selected >Choose your option</option>
+                {% for value in members %}
+                   <option value="{{ value }}">
+                    {{ value }}
+                   </option>
+                {% endfor %}
+            </select>
+            <label for="members_count">Members</label>
+        </div>
+        <div class="input-field col s4 center-align">
           <p>Private</p>
           <div class="switch">
             <label>

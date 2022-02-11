@@ -4,51 +4,50 @@
 
 get_event = """
 SELECT
-    events.id, events.title, events.creator, events.content, events.status,
+    e.id, e.title, e.creator, e.content, e.status, e.start_date, e.start_time,
     (json_agg(json_build_object('city', locations.city, 'street', locations.street,
     'building', locations.building, 'lat', locations.lat, 'long', locations.long)) -> 0) AS location,
     (json_agg(json_build_object('id', activities.id, 'name', activities.name)) -> 0) AS activity,
-    (json_agg(json_build_object('name', a.name, 'surname', a.surname)) -> 0) AS creator,
+    (json_agg(json_build_object('name', a.name, 'surname', a.surname)) -> 0) AS creator_info,
     case when count(m.user_id) = 0 then '[]' 
     else json_agg(json_build_object('id', m.user_id, 'name', m.name, 'surname', m.surname)) end members
 FROM
-    events
+    events AS e
 INNER JOIN
-    locations ON events.location_id=locations.id
+    locations ON e.location_id=locations.id
 INNER JOIN
-    activities ON events.activities_id=activities.id
+    activities ON e.activities_id=activities.id
 INNER JOIN 
-    accounts a ON  events.creator=a.user_id
+    accounts AS a ON  e.creator=a.user_id
 LEFT JOIN (
   SELECT events_id AS id, 
           a.user_id,
           a.name,
           a.surname
-  FROM event_users e
-  INNER JOIN accounts a ON a.user_id = e.users_id
-) m ON m.id = events.id
-WHERE events.id = :pk 
-GROUP BY events.id, events.title, events.creator, events.content, events.status
+  FROM event_users AS e
+  INNER JOIN accounts AS a ON a.user_id = e.users_id
+) m ON m.id = e.id
+WHERE e.id = :pk 
+GROUP BY e.id, e.title, e.creator, e.content, e.status
 """
 
 get_events = """
-    SELECT 
-        events.id, events.title, events.content, events.status, 
-        (json_agg(json_build_object('city', locations.city, 'street', locations.street,
-        'building', locations.building, 'lat', locations.lat, 'long', locations.long)) -> 0)AS location ,
-        (json_agg(json_build_object('id', activities.id, 'name', activities.name)) -> 0) AS activity
-    FROM 
-        events  
-    JOIN 
-        locations  ON events.location_id=locations.id
-    JOIN 
-        activities  ON events.activities_id=activities.id
-    GROUP BY events.id
+SELECT 
+    e.id, e.title, e.status, e.start_date, e.start_time,
+    (json_agg(json_build_object('lat', locations.lat, 'long', locations.long)) -> 0)AS location ,
+    (json_agg(json_build_object('id', activities.id, 'name', activities.name)) -> 0) AS activity
+FROM 
+    events AS e
+JOIN 
+    locations  ON e.location_id=locations.id
+JOIN 
+    activities  ON e.activities_id=activities.id
+GROUP BY e.id
 """
 
 
-event_create = "INSERT INTO events(creator, title, content, location_id, activities_id, start_date, start_time, is_private) " \
-               "VALUES (:creator, :title, :content, :location_id, :activities_id, :start_date, :start_time, :is_private) RETURNING id"
+event_create = "INSERT INTO events(creator, title, content, location_id, activities_id, start_date, start_time, members_count, is_private) " \
+               "VALUES (:creator, :title, :content, :location_id, :activities_id, :start_date, :start_time, :members_count, :is_private) RETURNING id"
 
 
 event_user_create = "INSERT INTO event_users (events_id, users_id) " \

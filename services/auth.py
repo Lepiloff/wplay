@@ -4,6 +4,7 @@ import base64
 from datetime import timedelta
 from datetime import datetime as dt
 from decouple import config
+from sqlalchemy import select
 from passlib.hash import bcrypt
 
 from fastapi import HTTPException, status
@@ -31,10 +32,7 @@ async def get_current_user(request: Request):
 
 
 async def is_authenticated(request: Request):
-    print('Checking is_authenticated')
-    print(f'request.cookies: {request.cookies}')
     cookie_authorization: str = request.cookies.get("Authorization")
-    print(f'cookie_authorization: {cookie_authorization}')
     if not cookie_authorization:
         return
     session = await redis_cache.get(cookie_authorization)
@@ -59,23 +57,20 @@ class AuthService:
             email=user_data.email, phone=user_data.phone,
             hashed_password=self.hash_password(user_data.password)
         )
+        #TODO тут надо почекать что бы транзакционно создавать обе таблицы
         user_id = await database.execute(query)
         query = accounts.insert().values(user_id=user_id)
-        account = await database.execute(query)
-        #TODO тут надо почекать что бы транзакционно создавать обе таблицы
+        await database.execute(query)
         return user_id
 
     @classmethod
     async def get_user_by_email(cls, email: str):
-        print(f'Email query: {email}')
-        query = users.select().where(users.c.email == email)
-        print(query)
+        query = select([users.c.id, users.c.hashed_password]).where(users.c.email == email)
         return await database.fetch_one(query)
 
     @classmethod
     async def get_user_by_id(cls, pk: int):
-        #TODO выводить тольео нужные поля в селекте по идее пока нужен только id
-        query = users.select().where(users.c.id == pk)
+        query = select([users.c.id, users.c.hashed_password]).where(users.c.id == pk)
         return dict(await database.fetch_one(query))
 
     @staticmethod
@@ -93,8 +88,6 @@ class AuthService:
             }
 
     async def authenticate_user(self, email: str, password: str):
-        print(email)
-        print(password)
         exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail='Incorrect email or password',

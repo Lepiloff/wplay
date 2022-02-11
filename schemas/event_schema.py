@@ -18,6 +18,7 @@ class EventForm(BaseModel):
     title: str
     description: str
     activity: int
+    members_count: str
     is_private: bool
     start_date: date
     start_time: time
@@ -27,11 +28,13 @@ class EventForm(BaseModel):
                 street: str = Form(...), house: str = Form(...),
                 title: str = Form(...), description: str = Form(...),
                 activity: str = Form(...), is_private: bool = Form(False),
+                members_count: str = Form(...),
                 start_date: date = Form(...), start_time: time = Form(...)):
         return cls(
             country=country, city=city,
             street=street, house=house, title=title,
             description=description, activity=activity,
+            members_count=members_count,
             is_private=is_private, start_date=start_date,
             start_time=start_time
         )
