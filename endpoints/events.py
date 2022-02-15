@@ -114,10 +114,11 @@ async def decline_event_invite(
         event: int,
         event_invite: int,
         sender: int,
+        message_id: int,
         user_id: str = Depends(get_current_user),
         service: InviteService = Depends(),
 ):
-    await service.decline_invite(event, event_invite, sender)
+    await service.decline_invite(event, event_invite, sender, message_id=message_id)
     redirect_url = request.url_for('user_profile', **{'pk': user_id})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
@@ -128,10 +129,11 @@ async def accept_event_invite(
         event: int,
         event_invites: int,
         sender: int,
+        message_id: int,
         user_id: str = Depends(get_current_user),
         service: InviteService = Depends(),
 ):
-    await service.accept_invite(event, event_invites, sender)
+    await service.accept_invite(event, event_invites, sender, message_id)
     redirect_url = request.url_for('user_profile', **{'pk': user_id})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 

@@ -68,8 +68,11 @@ get_profile_info = "SELECT users.id, users.email, a.user_id as account_id, a.nam
 get_user_notifications = "SELECT * FROM notifications WHERE user = :user"
 
 # Messages
-get_message_count = "SELECT COUNT(*) AS TOTAL, " \
-        "(SELECT COUNT(*) FROM messages WHERE type='FRIENDSHIP' AND messages.recipient = :user_id AND messages.is_read is False) AS friends, " \
-        "(SELECT COUNT(*) FROM messages WHERE type='EVENT' AND messages.recipient = :user_id  AND messages.is_read is False) AS events " \
-        "FROM messages WHERE messages.recipient = :user_id GROUP BY messages.recipient"
+get_message_count = """
+SELECT COUNT(*) AS TOTAL,
+(SELECT COUNT(*) FROM messages 
+WHERE type='FRIENDSHIP' AND messages.recipient = :user_id AND messages.is_read is False) AS friends,
+(SELECT COUNT(*) FROM messages WHERE type='EVENT' AND messages.recipient = :user_id  AND messages.is_read is False) AS events
+FROM messages WHERE messages.recipient = :user_id AND messages.is_read is False GROUP BY messages.recipient
+"""
 

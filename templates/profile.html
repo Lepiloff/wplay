@@ -75,14 +75,14 @@
 
                         {% if invite.status == invite_status.CREATED %}
                             <td>
-                                <form action="{{ CustomURLProcessor().url_for(request, 'accept_event_invite').include_query_params(event=invite.to_event, event_invites = invite.id, sender=invite.from_user) }}" method="POST">
+                                <form action="{{ CustomURLProcessor().url_for(request, 'accept_event_invite').include_query_params(event=invite.to_event, event_invites = invite.id, sender=invite.from_user, message_id=invite.message_id) }}" method="POST">
                                     <button class="btn-floating green lighten-2" type="submit" name="action">
                                     <i class="material-icons right">add_task</i>
                                     </button>
                                 </form>
                             </td>
                             <td>
-                                <form action="{{ CustomURLProcessor().url_for(request, 'decline_event_invite').include_query_params(event=invite.to_event, event_invite=invite.id, sender=invite.from_user) }}" method="POST" >
+                                <form action="{{ CustomURLProcessor().url_for(request, 'decline_event_invite').include_query_params(event=invite.to_event, event_invite=invite.id, sender=invite.from_user, message_id=invite.message_id) }}" method="POST" >
                                     <button class="btn-floating red lighten-2" type="submit" name="action">
                                     <i class="material-icons right">do_disturb</i>
                                     </button>
@@ -94,7 +94,7 @@
                               <a class="btn-floating disabled"><i class="material-icons">add_task</i></a>
                             </td>
                             <td>
-                                <form action="{{ CustomURLProcessor().url_for(request, 'decline_event_invite').include_query_params(event=invite.to_event, event_invite=invite.id, sender=invite.from_user) }}" method="POST" >
+                                <form action="{{ CustomURLProcessor().url_for(request, 'decline_event_invite').include_query_params(event=invite.to_event, event_invite=invite.id, sender=invite.from_user, message_id=invite.message_id) }}" method="POST" >
                                     <button class="btn-floating red lighten-2" type="submit" name="action">
                                     <i class="material-icons right">do_disturb</i>
                                     </button>
@@ -102,7 +102,7 @@
                             </td>
                         {% elif invite.status == invite_status.DECLINED %}
                             <td>
-                                <form action="{{ CustomURLProcessor().url_for(request, 'accept_event_invite').include_query_params(event=invite.to_event, event_invites = invite.id, sender=invite.from_user) }}" method="POST">
+                                <form action="{{ CustomURLProcessor().url_for(request, 'accept_event_invite').include_query_params(event=invite.to_event, event_invites = invite.id, sender=invite.from_user, message_id=invite.message_id) }}" method="POST">
                                     <button class="btn-floating green lighten-2" type="submit" name="action">
                                     <i class="material-icons right">add_task</i>
                                     </button>

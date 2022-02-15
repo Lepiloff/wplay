@@ -16,14 +16,14 @@
                             <td><a href="{{ url_for('get_event', pk=message.event) }}">{{ message.title }}</a> </td>
                             {% if message.status == invite_status.CREATED %}
                                 <td>
-                                   <form action="{{ url_for('accept_event_invite', pk=message.event_invite) }}" method="POST">
+                                   <form action="{{ CustomURLProcessor().url_for(request, 'accept_event_invite').include_query_params(event=message.event, event_invites = message.event_invite, sender=message.sender, message_id=message.id) }}" method="POST">
                                         <button class="btn-floating green lighten-2 link-button" type="submit" name="action">
                                         <i class="material-icons right">add_task</i>
                                         </button>
                                    </form>
                                 </td>
                                 <td>
-                                    <form action="{{ url_for('decline_event_invite', pk=message.event_invite) }}" method="POST" >
+                                    <form action="{{ CustomURLProcessor().url_for(request, 'decline_event_invite').include_query_params(event=message.event, event_invites = message.event_invite, sender=message.sender, message_id=message.id) }}" method="POST" >
                                         <button class="btn-floating red lighten-2" type="submit" name="action">
                                         <i class="material-icons right">do_disturb</i>
                                         </button>

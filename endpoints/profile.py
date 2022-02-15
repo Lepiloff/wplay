@@ -21,7 +21,6 @@ async def user_profile(
 ):
     user = await service.get_user_info(pk)
     events_invites = await service.get_user_events_invite_list(pk)
-    print(events_invites)
     return templates.TemplateResponse(
         'profile.html',
         context=
@@ -41,7 +40,6 @@ async def user_notification(
         service: MessagesService = Depends()
 ):
     messages = await service.get_messages(pk)
-    print(messages)
     messages = messages if messages else {}
     return templates.TemplateResponse(
         'notifications.html',

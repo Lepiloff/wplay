@@ -65,6 +65,7 @@ class AuthService:
 
     @classmethod
     async def get_user_by_email(cls, email: str):
+        # TODO зачем возвращаем hashed_password
         query = select([users.c.id, users.c.hashed_password]).where(users.c.email == email)
         return await database.fetch_one(query)
 

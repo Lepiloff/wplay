@@ -1,3 +1,5 @@
+from sqlalchemy.sql.expression import select, exists
+
 from models.invites import event_invites, InviteStatus
 from models.events import event_users
 from models.messages import messages
@@ -33,7 +35,7 @@ class InviteService:
         await MessagesService.create(from_user_id, to_user_id, event_id, invite, EVENT)
         return invite
 
-    async def decline_invite(self, event, event_id, sender):
+    async def decline_invite(self, event, event_id, sender, message_id):
         # TODO обернуть в транзакцию или в try
         query = event_invites.update().where(
             event_invites.c.id == event_id
@@ -43,25 +45,33 @@ class InviteService:
         # delete MtM table event_users if exist
         await self.delete_event_user(event, sender)
         await database.execute(query=query)
+        await MessagesService.change_message_status(message_id)
 
-    async def accept_invite(self, event_id, invites_id, sender):
+    async def accept_invite(self, event_id, invites_id, sender, message_id):
         # TODO транзакция
         query = event_invites.update().where(
             event_invites.c.id == invites_id
         ).where(
             event_invites.c.from_user == sender).values(status=InviteStatus.ACCEPTED)
-        print(query)
+        # create MtM table event_users
         await self.create_event_user(event_id, sender)
         await database.execute(query=query)
+        await MessagesService.change_message_status(message_id)
 
     @staticmethod
     async def create_event_user(event, sender):
-        query = event_users.insert()
-        values = {
-            'events_id': event,
-            'users_id': sender
-        }
-        await database.execute(query=query, values=values)
+        # if exist
+        e_u = select([event_users.c.id]).where(
+            event_users.c.events_id == event).where(
+            event_users.c.users_id == sender
+        )
+        if not await database.execute(query=e_u):
+            query = event_users.insert()
+            values = {
+                'events_id': event,
+                'users_id': sender
+            }
+            await database.execute(query=query, values=values)
 
     @staticmethod
     async def delete_event_user(event, sender):

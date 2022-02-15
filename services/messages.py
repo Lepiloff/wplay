@@ -1,7 +1,8 @@
 from sqlalchemy import select
+from starlette.responses import Response
 
 from models.users import accounts
-from models.messages import messages
+from models.messages import messages, NotificationType
 from models.invites import event_invites
 from models.events import events
 from db import database
@@ -36,8 +37,17 @@ class MessagesService:
             event_invites, messages.c.event_invite == event_invites.c.id
         ).join(events, messages.c.event == events.c.id)
         query = select(
-            [messages.c.sender, messages.c.event, messages.c.content,
-             messages.c.created_at, messages.c.event_invite, event_invites.c.status, events.c.title, accounts.c.name, accounts.c.surname]
+            [
+                messages.c.id, messages.c.sender, messages.c.event, messages.c.content,
+                messages.c.created_at, messages.c.event_invite,
+                event_invites.c.status, events.c.title, accounts.c.name, accounts.c.surname
+            ]
         ).select_from(event_invite).where(messages.c.recipient == user_id).where(~messages.c.is_read)
         result = await database.fetch_all(query=query)
         return [dict(r.items()) for r in result] if result else None
+
+    @staticmethod
+    async def change_message_status(message_id: int):
+        query = messages.update().where(messages.c.id == message_id)
+        await database.execute(query=query, values={'is_read': True})
+

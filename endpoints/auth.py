@@ -73,6 +73,7 @@ async def logout():
     response.delete_cookie('Authorization')
     response.delete_cookie('user_id')
     response.delete_cookie('event_notifications')
+    response.delete_cookie('friend_notifications')
     return response
 
 
