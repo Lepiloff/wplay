@@ -18,8 +18,7 @@ class UserService:
         user = await database.fetch_one(query=get_profile_info, values={'pk': pk})
         if user is None:
             raise HTTPException(status_code=404, detail="User not found")
-        user = dict(user.items())
-        return user
+        return dict(user)
 
     @staticmethod
     async def get_user_events_invite_list(pk: int):
@@ -28,7 +27,6 @@ class UserService:
             events, event_invites.c.to_event == events.c.id).join(
             messages, messages.c.event_invite == event_invites.c.id
         )
-
         query = select(
             [
              event_invites.c.id, event_invites.c.status, event_invites.c.from_user,
@@ -37,6 +35,6 @@ class UserService:
              ]
         ).select_from(event_invite).where(event_invites.c.to_user == pk).order_by(event_invites.c.created_at)
         events_invites = await database.fetch_all(query)
-        return [dict(r.items()) for r in events_invites]
+        return [dict(r) for r in events_invites]
 
 

@@ -9,10 +9,10 @@ def get_city():
 
 
 def get_coord(country, city, street, house):
-    # city = get_city()
     g = geocoder.osm(f'{country} {city} {street} {house}')
     if not g:
-        raise Exception
+        # TODO возвращать пользователю сообщение что адрес не корректен
+        raise Exception('Location info not find')
     lat, lon = tuple(g.latlng)
     return lat, lon
 

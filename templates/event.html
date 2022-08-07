@@ -101,6 +101,10 @@
             <div class="col s12">
                 <table class="responsive-table striped">
                     <tbody>
+                    <h1>MEMBERS</h1>
+                    <tr>
+                        <td><a href="{{ url_for('user_profile', pk=event.creator) }}">{{ event.creator_info.name + ' ' + event.creator_info.surname }}</a></td>
+                    </tr>
                     {{ event.memebers }}
                         {% for member in event.members %}
                           <tr>

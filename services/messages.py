@@ -44,7 +44,7 @@ class MessagesService:
             ]
         ).select_from(event_invite).where(messages.c.recipient == user_id).where(~messages.c.is_read)
         result = await database.fetch_all(query=query)
-        return [dict(r.items()) for r in result] if result else None
+        return [dict(r) for r in result] if result else None
 
     @staticmethod
     async def change_message_status(message_id: int):

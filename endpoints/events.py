@@ -72,6 +72,7 @@ async def get_event(
         service: EventsService = Depends()
 ):
     event = await service.get(pk)
+    print(event)
     tooltip = event['activity']['name']
     popup = event['title']
     event_coordinate = (event['location']['lat'], event['location']['long'])

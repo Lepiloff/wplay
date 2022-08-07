@@ -14,14 +14,14 @@ class EventsService:
         result = await database.fetch_one(query=get_event, values={'pk': pk})
         if result is None:
             raise HTTPException(status_code=404, detail="Event not found")
-        event = dict(result.items())
+        event = dict(result)
         return self.perform_data(event)
 
     async def get_list(self):
         db_result = await database.fetch_all(get_events)
         if db_result is None:
             raise HTTPException(status_code=404, detail="Events not found")
-        result = ([dict(r.items()) for r in db_result])
+        result = ([dict(r) for r in db_result])
         return list(map(self.perform_data, result))
 
     async def post(self, user_id, country, city, street, house,
