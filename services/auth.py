@@ -15,8 +15,6 @@ from schemas.user_schema import Token, UserCreate
 from sessions.core.base import redis_cache
 from starlette.requests import Request
 
-# TODO пкажется получается что сейчас на роутах где в депендсах есть get_current_user дважды польхователя тащит,
-#  так как есть еще в middleware ображение к is_authenticated  . Может их както можно объединить?
 
 async def get_current_user(request: Request):
     exception = HTTPException(
@@ -28,7 +26,7 @@ async def get_current_user(request: Request):
     session = await redis_cache.get(cookie_authorization)
     if not session:
         raise exception
-    return json.loads(session)['user_id']
+    return json.loads(session)
 
 
 async def is_authenticated(request: Request):
@@ -36,9 +34,10 @@ async def is_authenticated(request: Request):
     if not cookie_authorization:
         return
     session = await redis_cache.get(cookie_authorization)
-    if not session:
-        return
-    return json.loads(session)['user_id']
+    # if not session:
+    #     return
+    return False if not session else True
+    # return json.loads(session)['user_id']
 
 
 # TODO async ?   разобраться с класс методами , нужны ли они тут
@@ -66,7 +65,7 @@ class AuthService:
     @classmethod
     async def get_user_by_email(cls, email: str):
         # TODO зачем возвращаем hashed_password
-        query = select([users.c.id, users.c.hashed_password]).where(users.c.email == email)
+        query = select(users).where(users.c.email == email)
         return await database.fetch_one(query)
 
     @classmethod
@@ -80,11 +79,11 @@ class AuthService:
 
     async def create_session(self, user_data: dict):
         session_id = await self.generate_session_id()
-        user_id = user_data['id']
         return {
               'session_id': str(session_id, 'utf-8'),
               'session_data': {
-                  'user_id': user_id,
+                  'user_id': user_data['id'],
+                  'is_notified': user_data['is_notified']
               }
             }
 

@@ -43,12 +43,12 @@ async def events_list(
 @router.post('/create', response_model=EventBase)
 async def event_create(
         request: Request,
-        user_id: str = Depends(get_current_user),
+        user: str = Depends(get_current_user),
         service: EventsService = Depends(),
         form: EventForm = Depends(EventForm.as_form)
 ):
     event_id = await service.post(
-        user_id,
+        user['user_id'],
         form.country,
         form.city,
         form.street,
@@ -94,14 +94,14 @@ async def get_event(
 async def join_to_event(
         request: Request,
         pk: int,
-        from_user_id: str = Depends(get_current_user),
+        from_user: str = Depends(get_current_user),
         service: InviteService = Depends(),
         event_service: EventsService = Depends()
 ):
     #TODO  dont send invite to himself
     event = await event_service.get(pk)
     creator_id = event['creator']
-    await service.request_to_join(pk, creator_id, from_user_id)
+    await service.request_to_join(pk, creator_id, from_user['user_id'])
     # TODO success messages with data from invite result
     # TODO possible to get all data info from invite variable ?
 
@@ -116,11 +116,11 @@ async def decline_event_invite(
         event_invite: int,
         sender: int,
         message_id: int,
-        user_id: str = Depends(get_current_user),
+        user: str = Depends(get_current_user),
         service: InviteService = Depends(),
 ):
     await service.decline_invite(event, event_invite, sender, message_id=message_id)
-    redirect_url = request.url_for('user_profile', **{'pk': user_id})
+    redirect_url = request.url_for('user_profile', **{'pk': user['user_id']})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
@@ -131,10 +131,10 @@ async def accept_event_invite(
         event_invites: int,
         sender: int,
         message_id: int,
-        user_id: str = Depends(get_current_user),
+        user: str = Depends(get_current_user),
         service: InviteService = Depends(),
 ):
     await service.accept_invite(event, event_invites, sender, message_id)
-    redirect_url = request.url_for('user_profile', **{'pk': user_id})
+    redirect_url = request.url_for('user_profile', **{'pk': user['user_id']})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 

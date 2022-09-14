@@ -49,6 +49,7 @@
               <li>
                 <a class="" href="#">
                   <i class="material-icons notified">notifications_none</i>
+                {{ request.cookies.event_notifications }}
                   {% if request.cookies.event_notifications %}
                   <small class="notification-badge">{{request.cookies.event_notifications}}</small>
                   {% else %}

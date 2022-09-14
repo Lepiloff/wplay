@@ -11,7 +11,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from db import database
-from helpers.middleware import add_user_data_to_request
+from helpers.middleware import get_user_notifications
 from models.users import users
 from routes import api_router
 from sessions.core.base import redis_cache
@@ -44,7 +44,7 @@ async def shutdown_event():
 
 
 # Custom middleware
-app.middleware('http')(add_user_data_to_request)
+app.middleware('http')(get_user_notifications)
 
 # Custom endpoints
 app.include_router(api_router)

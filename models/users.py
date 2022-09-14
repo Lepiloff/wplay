@@ -20,6 +20,12 @@ users = Table(
         server_default=sql.expression.true(),
         nullable=True,
     ),
+    Column(
+        "is_notified",
+        Boolean(),
+        server_default=sql.expression.false(),
+        nullable=True,
+    ),
 )
 
 
@@ -36,7 +42,9 @@ accounts = Table(
     Column("surname", String(16), nullable=True),
     Column("age", String(3), nullable=True),
     Column("personal_info", Text(), nullable=True),
-    Column("gender", Enum(Gender, values_callable=lambda obj: [e.value for e in obj]), nullable=True),
+    Column("gender", Enum(Gender, values_callable=lambda obj: [e.value for e in obj]),
+           nullable=True
+           ),
 )
 
 

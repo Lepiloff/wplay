@@ -57,7 +57,7 @@
           <br>
           {{ event.activity.name}}
           {% if request.cookies.Authorization %}
-          <p>Request cookies</p>
+          <p>f'Request cookies: {{ request.cookies}}'</p>
           {% endif %}
           {% if request.cookies.user_id %}
           <p>{{request.cookies.user_id}}</p>
