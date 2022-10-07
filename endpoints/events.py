@@ -5,9 +5,11 @@ from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
 import starlette.status as status
 
+from models.users import users as User
+from services.auth import get_current_user
 from services.events import EventsService
 from services.events_invites import InviteService
-from services.auth import get_current_user
+from services.user import UserService
 from schemas.event_schema import EventForm, EventBase, EventList, EventSingle
 from helpers.map import Map
 
@@ -16,10 +18,14 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
+#TODO возможно для ограничения доступа лучше использовать декоратор а не get_current_user
+
+
 @router.get('/all', response_model=List[EventList])
 async def events_list(
         request: Request,
         service: EventsService = Depends(),
+        user: User = Depends(UserService.get_authenticated_user_id),
 ):
     events = await service.get_list()
     events_data = [
@@ -29,13 +35,14 @@ async def events_list(
         )
         for event in events
     ]
-    m = Map(zoom_start=11).show_events(events_data)
+    m = await Map(zoom_start=12).show_events(events_data)
     return templates.TemplateResponse(
         'events.html',
         context={
             'request': request,
             'events': events,
             'm': m._repr_html_(),
+            'user': user
         }
         )
 
@@ -69,14 +76,14 @@ async def event_create(
 async def get_event(
         request: Request,
         pk: int,
-        service: EventsService = Depends()
+        service: EventsService = Depends(),
+        user: User = Depends(UserService.get_authenticated_user_id),
 ):
     event = await service.get(pk)
-    print(event)
     tooltip = event['activity']['name']
     popup = event['title']
     event_coordinate = (event['location']['lat'], event['location']['long'])
-    m = Map(event_coordinate, 15, popup, tooltip).show_event()
+    m = await Map(event_coordinate, 15, popup, tooltip).show_event()
     #TODO dont show join button if user joined yet
     templates = Jinja2Templates(directory="templates")
     return templates.TemplateResponse(
@@ -85,6 +92,7 @@ async def get_event(
             'request': request,
             'event': event,
             'm': m._repr_html_(),
+            'user': user
         }
     )
 
@@ -113,13 +121,14 @@ async def join_to_event(
 async def decline_event_invite(
         request: Request,
         event: int,
-        event_invite: int,
+        event_invites: int,
         sender: int,
         message_id: int,
         user: str = Depends(get_current_user),
         service: InviteService = Depends(),
 ):
-    await service.decline_invite(event, event_invite, sender, message_id=message_id)
+    await service.decline_invite(event, event_invites, sender, message_id)
+    # TODO редирект на страницу нотификаций, потому что сообщений может быть несколько
     redirect_url = request.url_for('user_profile', **{'pk': user['user_id']})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
@@ -135,6 +144,7 @@ async def accept_event_invite(
         service: InviteService = Depends(),
 ):
     await service.accept_invite(event, event_invites, sender, message_id)
+    # TODO редирект на страницу нотификаций, потому что сообщений может быть несколько
     redirect_url = request.url_for('user_profile', **{'pk': user['user_id']})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 

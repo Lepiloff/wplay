@@ -30,8 +30,8 @@ users = Table(
 
 
 class Gender(enum.Enum):
-    MALE = "MALE"
-    FEMALE = "FEMALE"
+    MALE = "male"
+    FEMALE = "female"
 
 
 accounts = Table(

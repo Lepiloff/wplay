@@ -1,24 +1,42 @@
+import json
 from aioredis import Redis, from_url
+# from redis import asyncio as aioredis
 
 from decouple import config
 
 from typing import Optional
 
-
+# TODO перейти на более современную либу?
 class RedisCache:
 
     def __init__(self):
         self.redis_cache: Optional[Redis] = None
 
     async def init_cache(self):
-        # self.redis_cache = await create_redis_pool(config('REDIS_URL'))
-        self.redis_cache = from_url("redis://localhost")
+        self.redis_cache = from_url("redis://localhost",  decode_responses=True)
 
     async def keys(self, pattern):
         return await self.redis_cache.keys(pattern)
 
+    async def hkeys(self, name):
+        return await self.redis_cache.hkeys(name)
+
     async def set(self, key, value, ex=None):
+        """set string"""
         return await self.redis_cache.set(key, value, ex=ex)
+
+    async def hset(self, name, key=None, value=None, mapping=None):
+        """set dict"""
+        return await self.redis_cache.hset(name, key, value, mapping)
+
+    async def hget(self, name, key):
+        return await self.redis_cache.hget(name, key)
+
+    async def hgetall(self, key):
+        raw = await self.redis_cache.hgetall(key)
+        if not raw:
+            return
+        return raw
 
     async def get(self, key):
         raw = await self.redis_cache.get(key)
@@ -29,6 +47,9 @@ class RedisCache:
 
     async def delete(self, key):
         await self.redis_cache.delete(key)
+
+    async def hdel(self, name, key):
+        await self.redis_cache.hdel(name, key)
 
     async def close(self):
         await self.redis_cache.close()

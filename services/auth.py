@@ -10,6 +10,7 @@ from passlib.hash import bcrypt
 from fastapi import HTTPException, status
 
 from db import database
+from helpers.utils import str_to_int
 from models.users import users, accounts
 from schemas.user_schema import Token, UserCreate
 from sessions.core.base import redis_cache
@@ -23,21 +24,18 @@ async def get_current_user(request: Request):
     cookie_authorization: str = request.cookies.get("Authorization")
     if not cookie_authorization:
         raise exception
-    session = await redis_cache.get(cookie_authorization)
+    session = await redis_cache.hgetall(cookie_authorization)
     if not session:
         raise exception
-    return json.loads(session)
+    return await str_to_int(session)
 
 
 async def is_authenticated(request: Request):
     cookie_authorization: str = request.cookies.get("Authorization")
     if not cookie_authorization:
         return
-    session = await redis_cache.get(cookie_authorization)
-    # if not session:
-    #     return
+    session = await redis_cache.hgetall(cookie_authorization)
     return False if not session else True
-    # return json.loads(session)['user_id']
 
 
 # TODO async ?   разобраться с класс методами , нужны ли они тут

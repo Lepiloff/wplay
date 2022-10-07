@@ -57,10 +57,7 @@
           <br>
           {{ event.activity.name}}
           {% if request.cookies.Authorization %}
-          <p>f'Request cookies: {{ request.cookies}}'</p>
-          {% endif %}
-          {% if request.cookies.user_id %}
-          <p>{{request.cookies.user_id}}</p>
+          <p>Request cookies: {{ request.cookies}}</p>
           {% endif %}
           <form action="{{ url_for('join_to_event', pk=event.id) }}" method="POST" class="inline">
               <button class="btn-small green lighten-2" type="submit" name="action">Submit

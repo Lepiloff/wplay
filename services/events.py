@@ -4,7 +4,7 @@ from typing import Dict
 from fastapi import HTTPException
 
 from db import database
-from helpers.utils import get_city, get_coord
+from helpers.utils import get_coord
 from query import get_event, get_events, location_create, event_create, event_user_create
 
 
@@ -28,7 +28,7 @@ class EventsService:
                    title, content, activity, members_count,
                    is_private, start_date, start_time):
         # TODO  в transaction завернуть ?
-        lat, lon = get_coord(country, city, street, house)
+        lat, lon = await get_coord(country, city, street, house)
         values = {'country': country, 'city': city, 'street': street,
                   'house': house, 'lat': lat, 'long': lon
                   }

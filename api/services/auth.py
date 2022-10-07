@@ -80,6 +80,7 @@ class AuthService:
             email=user_data.email, phone=user_data.phone,
             hashed_password=self.hash_password(user_data.password)
         )
+        # TODO transaction
         user_id = await database.execute(query)
         query = accounts.insert().values(user_id=user_id)
         account = await database.execute(query)

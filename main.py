@@ -1,17 +1,11 @@
 import math
-import asyncio
-import urllib
-
-import folium
-import geocoder
 
 from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from db import database
-from helpers.middleware import get_user_notifications
+from helpers.middleware import get_user_notifications, set_custom_attr
 from models.users import users
 from routes import api_router
 from sessions.core.base import redis_cache
@@ -45,6 +39,7 @@ async def shutdown_event():
 
 # Custom middleware
 app.middleware('http')(get_user_notifications)
+app.middleware('http')(set_custom_attr)
 
 # Custom endpoints
 app.include_router(api_router)
@@ -54,7 +49,7 @@ app.include_router(api_router)
 
 
 
-
+#TODO в модели user поле is_notified сделать index=True
 #TODO чекнуть может ли одна локация быть у разных ивентов (если это например спортцентр)
 #TODO почекать на удаление связанных таблиц (ONDELATE = ....)
 # TODO судя по этому https://fastapi.tiangolo.com/advanced/templates/  надо везде в использовать response_class=HTMLResponse
@@ -62,6 +57,7 @@ app.include_router(api_router)
 # TODO добавить индексы в БД
 # TODO безопасность чекнуть, формы и прочее
 #TODO в роутах вызов логики везде через try/except
+# TODO транзакции где надо (при множественном добавлениии\изменении существенно ускоряют запись в БД)
 
 
 @app.post("/simple_users")
@@ -87,22 +83,6 @@ async def _users(request: Request):
 
 
 ##############
-@app.get("/get_location", response_class=HTMLResponse)
-async def read_item(request: Request):
-    #print(request.body())
-    #return templates.TemplateResponse("index.html", {"request": request})
-    city = geocoder.ip('me').city
-    g = geocoder.osm(f'дзержинского 11, {city}')
-    #print(g.json)
-    current_coord = g.latlng
-    print(g.latlng)
-    print(city)
-    print(distance(current_coord, (53.8915, 27.5279)))
-    start_coords = (46.9540700, 142.7360300)
-    folium_map = folium.Map(location=current_coord, zoom_start=19)
-    c= folium.LatLngPopup()
-    folium_map.add_child(c)
-    return folium_map._repr_html_()
 
 
 def distance(origin, destination):
@@ -119,15 +99,4 @@ def distance(origin, destination):
 
     return d
 
-@app.route("/get_coord", methods=['GET', 'POST'])
-def read_root(request: Request):
-    print (request)
-    start_coords = (46.9540700, 142.7360300)
-    folium_map = folium.Map(location=start_coords, zoom_start=14)
-    c= folium.LatLngPopup()
-    folium_map.add_child(c)
-    folium_map.save("templates/map.html")
-    return templates.TemplateResponse("index.html", {"request": request})
 ##################################
-
-# TODO транзакции где надо (при множественном добавлениии\изменении существенно ускоряют запись в БД)

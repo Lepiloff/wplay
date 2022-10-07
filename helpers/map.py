@@ -1,5 +1,8 @@
-import geocoder
+import ipinfo
 import folium
+
+from helpers.utils import get_settings
+
 
 #TODO async ?
 class Map:
@@ -9,23 +12,19 @@ class Map:
         self.popup = popup
         self.tooltip = tooltip
 
-
     @staticmethod
-    def get_city_center_coord():
-        # TODO точность хромает, рассмотреть другой способ получения координат
-        g = geocoder.ip('me')
-        country, city = (g.country, g.city)
-        g = geocoder.osm(f'{country} {city}')
-        if not g:
-            raise Exception
-        lat, lon = tuple(g.latlng)
+    async def _get_city_center_coord():
+        handler = ipinfo.getHandlerAsync(get_settings().ipinfo_access_token)
+        details = await handler.getDetails()
+        lat, lon = (details.latitude, details.longitude)
         return lat, lon
 
-    def show_event(self):
-        return self.add_marker(self.init_map())
+    async def show_event(self):
+        return await self._add_marker(await self._init_map())
 
-    def show_events(self, event_list):
-        m = self.init_map()
+    # TODO в консоли пишет Unclosed client session   , надо закрыть соединение
+    async def show_events(self, event_list):
+        m = await self._init_map()
         for event in event_list:
             id, popup, lat, long, tooltip = event
             folium.Marker(
@@ -36,13 +35,16 @@ class Map:
             ).add_to(m)
         return m
 
-    def init_map(self):
+    async def _init_map(self):
         if self.event_coordinate:
             return folium.Map(location=self.event_coordinate, zoom_start=self.zoom_start)
         else:
-            return folium.Map(location=self.get_city_center_coord(), zoom_start=self.zoom_start)
+            return folium.Map(
+                location=await self._get_city_center_coord(),
+                zoom_start=self.zoom_start
+            )
 
-    def add_marker(self, m):
+    async def _add_marker(self, m):
         folium.Marker(
             location=list(self.event_coordinate),
             popup=self.popup,

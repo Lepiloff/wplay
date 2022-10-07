@@ -1,20 +1,45 @@
-import geocoder
+from geopy.adapters import AioHTTPAdapter
+from geopy.geocoders import Nominatim, GoogleV3
 import urllib
+from functools import lru_cache
+
 from fastapi import Request
+from typing import Dict
 import sqlalchemy.types as types
 
-
-def get_city():
-    return geocoder.ip('me').city
+from config import Settings
 
 
-def get_coord(country, city, street, house):
-    g = geocoder.osm(f'{country} {city} {street} {house}')
-    if not g:
-        # TODO возвращать пользователю сообщение что адрес не корректен
-        raise Exception('Location info not find')
-    lat, lon = tuple(g.latlng)
+async def get_coord(country, city, street, house):
+    # Try to get coordinate using free Nominatim, else try with GoogleV3 (paid)
+    async with Nominatim(
+            user_agent='wonna_train',
+            adapter_factory=AioHTTPAdapter,
+    ) as geolocator:
+        location = await geolocator.geocode(f'{country} {city} {street} {house}', timeout=10)
+    try:
+        lat, lon = (location.latitude, location.longitude)
+    except AttributeError:
+        async with GoogleV3(
+                api_key=get_settings().google_maps_api_key,
+                adapter_factory=AioHTTPAdapter
+        ) as geolocator:
+            location = await geolocator.geocode(f'{country} {city} {street} {house}', timeout=10)
+            lat, lon = (location.latitude, location.longitude)
     return lat, lon
+
+
+async def str_to_int(data: Dict) -> Dict:
+    return {key: (int(value) if value.isdigit() else value) for key, value in data.items()}
+
+
+async def bool_to_int(data: Dict) -> Dict:
+    return {key: (int(value) if isinstance(value, bool) else value) for key, value in data.items()}
+
+
+@lru_cache()
+def get_settings():
+    return Settings()
 
 
 class EnumAsInteger(types.TypeDecorator):
