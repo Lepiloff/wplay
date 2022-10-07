@@ -56,7 +56,12 @@ class AuthService:
         )
         #TODO тут надо почекать что бы транзакционно создавать обе таблицы
         user_id = await database.execute(query)
-        query = accounts.insert().values(user_id=user_id)
+        query = accounts.insert().values(
+            user_id=user_id,
+            name=user_data.first_name,
+            surname=user_data.last_name,
+            gender=user_data.gender
+        )
         await database.execute(query)
         return user_id
 

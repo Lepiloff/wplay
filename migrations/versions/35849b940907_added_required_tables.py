@@ -68,7 +68,7 @@ def upgrade():
     sa.Column('surname', sa.String(length=16), nullable=True),
     sa.Column('age', sa.String(length=3), nullable=True),
     sa.Column('personal_info', sa.Text(), nullable=True),
-    sa.Column('gender', sa.Enum('MALE', 'FEMALE', name='gender'), nullable=True),
+    sa.Column('gender', sa.Enum('male', 'female', name='gender'), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['users.id'], ),
     sa.PrimaryKeyConstraint('user_id')
     )

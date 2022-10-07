@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Request, status
 from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette.responses import RedirectResponse
@@ -61,30 +61,13 @@ async def login(
 #     return templates.TemplateResponse('sign_up.html', context={'request': request})
 
 
-@router.post('/registrations')
+@router.post('/registration')
 async def signup(
-        request: Request,
         service: AuthService = Depends(),
         form: UserCreateForm = Depends(UserCreateForm.as_form)
 ):
-    #TODO есть register_new_user в AuthService
-    print('Calling SignUP')
-    print(form)
-    # session = await service.authenticate_user(
-    #     user_data.username,
-    #     user_data.password
-    # )
-    # response = RedirectResponse(url='/')
-    # response.set_cookie(
-    #     "Authorization",
-    #     value=session['session_id'],
-    #     httponly=True,
-    #     max_age=1800,
-    #     expires=1800,
-    # )
-    # #TODO set expired time equal response cookie
-    # await redis_cache.set(session['session_id'], json.dumps(session['session_data']))
-    # return response
+    await service.register_new_user(form)
+    return RedirectResponse(url='/', status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/logout")
