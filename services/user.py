@@ -1,7 +1,4 @@
-import itertools
-import json
-
-from sqlalchemy import select, desc, column, func, table, and_, text, join
+from sqlalchemy import select
 
 from fastapi import HTTPException
 from fastapi import Request
@@ -47,7 +44,6 @@ class UserService:
 
     @staticmethod
     async def change_user_notifications_status(user_id: str, value: bool):
-        # TODO transaction
         query = users.update().where(
             users.c.id == user_id
         ).values(is_notified=value)

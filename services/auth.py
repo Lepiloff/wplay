@@ -1,9 +1,6 @@
-import json
 import os
 import base64
-from datetime import timedelta
-from datetime import datetime as dt
-from decouple import config
+
 from sqlalchemy import select
 from passlib.hash import bcrypt
 
@@ -49,12 +46,13 @@ class AuthService:
     def hash_password(cls, password: str) -> str:
         return bcrypt.hash(password)
 
+    @database.transaction()
     async def register_new_user(self, user_data: UserCreate):
         query = users.insert().values(
             email=user_data.email, phone=user_data.phone,
             hashed_password=self.hash_password(user_data.password)
         )
-        #TODO тут надо почекать что бы транзакционно создавать обе таблицы
+        #TODO отлавливать ошибки типа если есть такой email, сейчас все ломается
         user_id = await database.execute(query)
         query = accounts.insert().values(
             user_id=user_id,

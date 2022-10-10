@@ -24,10 +24,10 @@ class EventsService:
         result = ([dict(r) for r in db_result])
         return list(map(self.perform_data, result))
 
+    @database.transaction()
     async def post(self, user_id, country, city, street, house,
                    title, content, activity, members_count,
                    is_private, start_date, start_time):
-        # TODO  в transaction завернуть ?
         lat, lon = await get_coord(country, city, street, house)
         values = {'country': country, 'city': city, 'street': street,
                   'house': house, 'lat': lat, 'long': lon

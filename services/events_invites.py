@@ -31,15 +31,15 @@ class InviteService:
         }
         return await database.execute(query=query, values=values)
 
+    @database.transaction()
     async def request_to_join(self, event_id, to_user_id, from_user_id):
-        # TODO обернуть в транзакцию или в try
         invite = await self.create(event_id, to_user_id, from_user_id)
         await MessagesService.create(from_user_id, to_user_id, event_id, invite, EVENT)
         await UserService.change_user_notifications_status(to_user_id, True)
         return invite
 
+    @database.transaction()
     async def decline_invite(self, event, event_id, sender, message_id):
-        # TODO обернуть в транзакцию или в try
         query = event_invites.update().where(
             event_invites.c.id == event_id
         ).where(
@@ -50,8 +50,8 @@ class InviteService:
         await database.execute(query=query)
         await MessagesService.change_message_status(message_id)
 
+    @database.transaction()
     async def accept_invite(self, event_id, invites_id, sender, message_id):
-        # TODO транзакция
         query = event_invites.update().where(
             event_invites.c.id == invites_id
         ).where(
