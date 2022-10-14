@@ -10,6 +10,12 @@ import sqlalchemy.types as types
 from config import Settings
 
 
+def is_show_event_invite_button(event, user):
+    except_user_id = [d['id'] for d in event['members'] if 'id' in d]
+    except_user_id.append(event['creator'])
+    return False if user.get('user_id') in except_user_id else True
+
+
 async def get_coord(country, city, street, house):
     # Try to get coordinate using free Nominatim, else try with GoogleV3 (paid)
     async with Nominatim(
@@ -59,7 +65,7 @@ class EnumAsInteger(types.TypeDecorator):
         if isinstance(value, self.enum_type):
             return value.value
         raise ValueError('expected %s value, got %s'
-            % (self.enum_type.__name__, value.__class__.__name__))
+                         % (self.enum_type.__name__, value.__class__.__name__))
 
     def process_result_value(self, value, dialect):
         return self.enum_type(value)

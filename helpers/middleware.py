@@ -18,7 +18,7 @@ async def get_user_notifications(request: Request, call_next):
         response = await call_next(request)
     except RuntimeError as e:
         if await request.is_disconnected() and str(e) == "No response returned.":
-            return Response(status_code=status.HTTPStatus.NO_CONTENT)
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
         else:
             raise
     return response
@@ -32,7 +32,7 @@ async def set_custom_attr(request: Request, call_next):
         response = await call_next(request)
     except RuntimeError as e:
         if await request.is_disconnected() and str(e) == "No response returned.":
-            return Response(status_code=status.HTTPStatus.NO_CONTENT)
+            return Response(status_code=status.HTTP_204_NO_CONTENT)
         else:
             raise
     return response

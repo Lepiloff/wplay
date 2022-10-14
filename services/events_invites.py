@@ -13,6 +13,7 @@ from services.user import UserService
 EVENT = 'EVENT'
 
 #TODO добавить функционал приглашения пользователя в ивент
+# TODO статус 'CREATED'  почему не в константе находится
 
 class InviteService:
 
@@ -37,6 +38,13 @@ class InviteService:
         await MessagesService.create(from_user_id, to_user_id, event_id, invite, EVENT)
         await UserService.change_user_notifications_status(to_user_id, True)
         return invite
+
+    @database.transaction()
+    async def decline_to_participate_in(self, event_id, to_user_id, from_user_id):
+        # Надо учесть 2 случая, когда запрос уже был принят и когда еще нет
+
+
+        pass
 
     @database.transaction()
     async def decline_invite(self, event, event_id, sender, message_id):

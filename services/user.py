@@ -60,7 +60,7 @@ class UserService:
 
     @staticmethod
     async def get_authenticated_user_id(request: Request):
-        user = None
+        user = {}
         if await is_authenticated(request):
             user = await get_current_user(request)
         return user

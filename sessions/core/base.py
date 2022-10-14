@@ -45,6 +45,9 @@ class RedisCache:
         # redis return bytes object, change this to clear data
         return raw.decode('utf-8')
 
+    async def expire(self, name, time):
+        await self.redis_cache.expire(name, time)
+
     async def delete(self, key):
         await self.redis_cache.delete(key)
 

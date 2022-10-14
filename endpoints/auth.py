@@ -37,28 +37,24 @@ async def login(
         "Authorization",
         value=session['session_id'],
         httponly=True,
-        max_age=1800,
-        expires=1800,
+        max_age=3600,
+        expires=3600,
     )
-    #TODO ограничить время жизни парамеров в редис
     sessions_data = await bool_to_int(session['session_data'])
     await redis_cache.hset(
         name=session['session_id'],
         mapping=sessions_data
     )
     # create table to match user_id and session_id
-    #TODO ограничить время жизни парамеров в редис
+    #TODO так как нет возможности установить время жизни для вложенного ключа,
+    # возможно надо сделать шедулед таск на очистку всех ключей в settings.user_session_id
     await redis_cache.hset(
         name=settings.user_session_id,
         mapping={sessions_data['user_id']: session['session_id']}
     )
+    await redis_cache.expire(session['session_id'], 3600)
     response.status_code = 302
     return response
-
-
-# @router.get('/registrations')
-# async def signup(request: Request):
-#     return templates.TemplateResponse('sign_up.html', context={'request': request})
 
 
 @router.post('/registration')
@@ -90,7 +86,7 @@ async def logout(request: Request,
 @router.get('/current_user')
 async def redis_keys():
     print(await redis_cache.keys('*'))
-    print(await redis_cache.hgetall('USER_SESSION_ID'))
+    print(await redis_cache.hgetall('user_session_id'))
     # print(await redis_cache.hget('USER_SESSION_ID'))
     # print(await redis_cache.hgetall('zw0aLWlgS4nT9grznj7JFDmM72hVvZtWUaadt8XxXhg='))
     return None

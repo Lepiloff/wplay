@@ -24,4 +24,3 @@ async def activity_create(request: Request, name: str = Form(...),
                           service: ActivityService = Depends()):
     result = await service.post(name)
     return templates.TemplateResponse('activity.html', context={'request': request, 'result': result})
-

@@ -55,15 +55,16 @@
         </div>
         <div class="col s12 m6">
           <br>
-          {{ event.activity.name}}
-          {% if request.cookies.Authorization %}
-          <p>Request cookies: {{ request.cookies}}</p>
-          {% endif %}
+          {% if request.cookies.Authorization and show_button%}
           <form action="{{ url_for('join_to_event', pk=event.id) }}" method="POST" class="inline">
-              <button class="btn-small green lighten-2" type="submit" name="action">Submit
+              <button class="btn-small green lighten-2" type="submit" name="action">Request to join
               <i class="material-icons right">send</i>
               </button>
           </form>
+          {% else %}
+              <button class="btn-small green lighten-2 disabled" type="submit" name="action">Request to join
+              </button>
+          {% endif %}
           <ul class="collection with-header z-depth-4">
             <li class="collection-header">
               <h5>Services</h5>

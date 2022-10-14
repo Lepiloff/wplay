@@ -12,13 +12,11 @@ from services.events_invites import InviteService
 from services.user import UserService
 from schemas.event_schema import EventForm, EventBase, EventList, EventSingle
 from helpers.map import Map
+from helpers.utils import is_show_event_invite_button
 
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
-
-
-#TODO возможно для ограничения доступа лучше использовать декоратор а не get_current_user
 
 
 @router.get('/all', response_model=List[EventList])
@@ -84,7 +82,8 @@ async def get_event(
     popup = event['title']
     event_coordinate = (event['location']['lat'], event['location']['long'])
     m = await Map(event_coordinate, 15, popup, tooltip).show_event()
-    #TODO dont show join button if user joined yet
+    #TODO отозвать заявку кнопка, метод decline_to_participate_in в InviteService
+    event_invite_button = is_show_event_invite_button(event, user)
     templates = Jinja2Templates(directory="templates")
     return templates.TemplateResponse(
         'event.html',
@@ -92,7 +91,8 @@ async def get_event(
             'request': request,
             'event': event,
             'm': m._repr_html_(),
-            'user': user
+            'user': user,
+            'show_button': event_invite_button,
         }
     )
 
@@ -106,7 +106,6 @@ async def join_to_event(
         service: InviteService = Depends(),
         event_service: EventsService = Depends()
 ):
-    #TODO  dont send invite to himself
     event = await event_service.get(pk)
     creator_id = event['creator']
     await service.request_to_join(pk, creator_id, from_user['user_id'])
@@ -128,8 +127,7 @@ async def decline_event_invite(
         service: InviteService = Depends(),
 ):
     await service.decline_invite(event, event_invites, sender, message_id)
-    # TODO редирект на страницу нотификаций, потому что сообщений может быть несколько
-    redirect_url = request.url_for('user_profile', **{'pk': user['user_id']})
+    redirect_url = request.url_for('user_notification', **{'pk': user['user_id']})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
@@ -144,7 +142,6 @@ async def accept_event_invite(
         service: InviteService = Depends(),
 ):
     await service.accept_invite(event, event_invites, sender, message_id)
-    # TODO редирект на страницу нотификаций, потому что сообщений может быть несколько
-    redirect_url = request.url_for('user_profile', **{'pk': user['user_id']})
+    redirect_url = request.url_for('user_notification', **{'pk': user['user_id']})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
