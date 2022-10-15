@@ -11,9 +11,15 @@ from config import Settings
 
 
 def is_show_event_invite_button(event, user):
-    except_user_id = [d['id'] for d in event['members'] if 'id' in d]
-    except_user_id.append(event['creator'])
-    return False if user.get('user_id') in except_user_id else True
+    show_cancel_button = False
+    show_invite_button = True
+    participate_user = [d['id'] for d in event['members'] if 'id' in d]
+    if user['user_id'] in participate_user:
+        show_cancel_button = True
+        show_invite_button = False
+    if user['user_id'] == event['creator']:
+        show_invite_button = False
+    return show_cancel_button, show_invite_button
 
 
 async def get_coord(country, city, street, house):

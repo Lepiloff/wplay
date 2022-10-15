@@ -13,6 +13,7 @@ class InviteStatus(enum.Enum):
     ACCEPTED = 'ACCEPTED'
     DECLINED = 'DECLINED'
     OUTDATED = 'OUTDATED'
+    RECALLED = 'RECALLED'
 
 
 class InviteType(enum.Enum):

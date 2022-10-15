@@ -82,8 +82,7 @@ async def get_event(
     popup = event['title']
     event_coordinate = (event['location']['lat'], event['location']['long'])
     m = await Map(event_coordinate, 15, popup, tooltip).show_event()
-    #TODO отозвать заявку кнопка, метод decline_to_participate_in в InviteService
-    event_invite_button = is_show_event_invite_button(event, user)
+    event_cancel_button, event_invite_button = is_show_event_invite_button(event, user)
     templates = Jinja2Templates(directory="templates")
     return templates.TemplateResponse(
         'event.html',
@@ -92,7 +91,8 @@ async def get_event(
             'event': event,
             'm': m._repr_html_(),
             'user': user,
-            'show_button': event_invite_button,
+            'cancel_button': event_cancel_button,
+            'invite_button': event_invite_button,
         }
     )
 
@@ -145,3 +145,17 @@ async def accept_event_invite(
     redirect_url = request.url_for('user_notification', **{'pk': user['user_id']})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
+#TODO логику написать
+@router.post('/{pk}/cancel_participation')
+async def cancel_participation(
+        request: Request,
+        event: int,
+        event_invites: int,
+        sender: int,
+        message_id: int,
+        user: str = Depends(get_current_user),
+        service: InviteService = Depends(),
+):
+    await service.decline_to_participate_in(event, event_invites, sender, message_id)
+    redirect_url = request.url_for('user_notification', **{'pk': user['user_id']})
+    return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)

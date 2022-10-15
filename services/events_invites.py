@@ -1,19 +1,17 @@
-from sqlalchemy.sql.expression import select, exists
+from sqlalchemy.sql.expression import select
 
 from db import database
 from models.invites import event_invites, InviteStatus
 from models.events import event_users
-from models.messages import messages
-from models.notifications import notifications
-from services.notifications import NotificationsService
 from services.messages import MessagesService
 from services.user import UserService
+from helpers.constants import Messages
 
 
 EVENT = 'EVENT'
 
 #TODO добавить функционал приглашения пользователя в ивент
-# TODO статус 'CREATED'  почему не в константе находится
+
 
 class InviteService:
 
@@ -27,7 +25,7 @@ class InviteService:
             'to_event': event_id,
             'to_user': to_user_id,
             'from_user': from_user_id,
-            'status': 'CREATED',
+            'status': InviteStatus.CREATED,
             'type': _type
         }
         return await database.execute(query=query, values=values)
@@ -35,16 +33,40 @@ class InviteService:
     @database.transaction()
     async def request_to_join(self, event_id, to_user_id, from_user_id):
         invite = await self.create(event_id, to_user_id, from_user_id)
-        await MessagesService.create(from_user_id, to_user_id, event_id, invite, EVENT)
+        message = Messages.EVENT_INVITE.value
+        await MessagesService.create(from_user_id, to_user_id, message, event_id, invite, EVENT)
         await UserService.change_user_notifications_status(to_user_id, True)
         return invite
 
     @database.transaction()
-    async def decline_to_participate_in(self, event_id, to_user_id, from_user_id):
+    async def decline_to_participate_in(self, event_id, to_user_id, from_user_id, invite):
         # Надо учесть 2 случая, когда запрос уже был принят и когда еще нет
 
+        # Invite accepted already
+        event_invite = select([event_invites.c.id]).where(
+            event_invites.c.from_user == from_user_id).where(
+            event_invites.c.to_user == to_user_id,
+            event_invites.c.to_event == event_id
+        )
+        if await database.execute(query=event_invite):
+            # query = event_invite.delete().where(
+            #     event_invites.c.from_user == from_user_id).where(
+            #     event_invites.c.to_user == to_user_id,
+            #     event_invites.c.to_event == event_id
+            # )
+            query = event_invites.update().where(
+                event_invites.c.id == event_id
+            ).where(
+                event_invites.c.from_user == from_user_id
+            ).values(status=InviteStatus.RECALLED)
+            await self._delete_event_user(event_id, from_user_id)
+            await database.execute(query=query)
+            message = Messages.EVENT_INVITE.value
+            await MessagesService.create(
+                from_user_id, to_user_id, message, event_id, invite, EVENT)
+            await UserService.change_user_notifications_status(to_user_id, True)
 
-        pass
+        #TODO   Invite not accepted yet
 
     @database.transaction()
     async def decline_invite(self, event, event_id, sender, message_id):

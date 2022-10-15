@@ -13,13 +13,13 @@ from helpers.constants import Messages
 class MessagesService:
 
     @staticmethod
-    async def create(sender, recipient, event_id, event_invite, _type):
+    async def create(sender, recipient, message, event_id, event_invite, _type):
         query = messages.insert()
         values = {
             'recipient': recipient,
             'sender': sender,
             'event': event_id,
-            'content': Messages.EVENT_INVITE.value,
+            'content': message,
             'event_invite': event_invite,
             'type': _type,
         }

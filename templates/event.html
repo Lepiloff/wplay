@@ -55,10 +55,16 @@
         </div>
         <div class="col s12 m6">
           <br>
-          {% if request.cookies.Authorization and show_button%}
+          {% if request.cookies.Authorization and invite_button %}
           <form action="{{ url_for('join_to_event', pk=event.id) }}" method="POST" class="inline">
               <button class="btn-small green lighten-2" type="submit" name="action">Request to join
               <i class="material-icons right">send</i>
+              </button>
+          </form>
+          {% elif request.cookies.Authorization and cancel_button %}
+          <form action="{{ url_for('cancel_participation', pk=event.id) }}" method="POST" class="inline">
+              <button class="btn-small red lighten-2" type="submit" name="action">Cancel participation
+              <i class="material-icons right">cancel</i>
               </button>
           </form>
           {% else %}
