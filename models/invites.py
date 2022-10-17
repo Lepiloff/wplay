@@ -1,7 +1,7 @@
 import enum
 
 from sqlalchemy import Table, Column, Integer, Boolean, \
-    ForeignKey, DateTime, sql, Enum
+    ForeignKey, DateTime, sql, Enum, UniqueConstraint
 
 from db import metadata
 from .events import events
@@ -41,7 +41,9 @@ event_invites = Table(
         server_default=sql.expression.true(),
         nullable=True,
     ),
+    UniqueConstraint('from_user', 'to_user', 'to_event', 'is_active', name='unique_event_invites')
 )
+#TODO выше UniqueConstraint  использовать только для условия is_active=True иначе не закрются заявки если один пользовател просился несколько раз
 
 
 friend_invites = Table(

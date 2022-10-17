@@ -57,4 +57,12 @@ async def user_notification(
     )
     # clear notifications flag from request
     request.state._state.pop('user_notifications', None)
+    # hide message with recalled status after first demonstration
+    recalled_messages = [
+        d['id'] for d in messages
+        if 'id' in d and d['status'] == InviteStatus.RECALLED
+    ]
+    #TODO update in bulk
+    if recalled_messages:
+        await MessagesService.change_message_status(recalled_messages[0])
     return response

@@ -62,7 +62,10 @@
               </button>
           </form>
           {% elif request.cookies.Authorization and cancel_button %}
-          <form action="{{ url_for('cancel_participation', pk=event.id) }}" method="POST" class="inline">
+{#          <form action="{{ url_for('cancel_participation', pk=event.id) }}" method="POST" class="inline">#}
+          <form action="{{ CustomURLProcessor().url_for(request, 'cancel_participation').include_query_params(event_id=event.id, event_owner = event.creator, ) }}" method=POST class="inline">
+{#            <form action="{{ CustomURLProcessor().url_for(request, 'decline_event_invite').include_query_params(event=invite.to_event, event_invite=invite.id, sender=invite.from_user, message_id=invite.message_id) }}" method="POST" >#}
+
               <button class="btn-small red lighten-2" type="submit" name="action">Cancel participation
               <i class="material-icons right">cancel</i>
               </button>

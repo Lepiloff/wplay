@@ -28,6 +28,7 @@ class InviteService:
             'status': InviteStatus.CREATED,
             'type': _type
         }
+        #TODO в модель event_invites добавить unique_constr из to_event, to_user, from_user
         return await database.execute(query=query, values=values)
 
     @database.transaction()
@@ -39,34 +40,28 @@ class InviteService:
         return invite
 
     @database.transaction()
-    async def decline_to_participate_in(self, event_id, to_user_id, from_user_id, invite):
+    async def decline_to_participate_in(self, event_id, to_user_id, from_user_id):
+        # TODO менять в event_invite is_active = False
         # Надо учесть 2 случая, когда запрос уже был принят и когда еще нет
 
         # Invite accepted already
-        event_invite = select([event_invites.c.id]).where(
+        query = select([event_invites.c.id]).where(
             event_invites.c.from_user == from_user_id).where(
             event_invites.c.to_user == to_user_id,
             event_invites.c.to_event == event_id
         )
-        if await database.execute(query=event_invite):
-            # query = event_invite.delete().where(
-            #     event_invites.c.from_user == from_user_id).where(
-            #     event_invites.c.to_user == to_user_id,
-            #     event_invites.c.to_event == event_id
-            # )
-            query = event_invites.update().where(
-                event_invites.c.id == event_id
-            ).where(
-                event_invites.c.from_user == from_user_id
-            ).values(status=InviteStatus.RECALLED)
+        event_invite_id = await database.execute(query=query)
+        if event_invite_id:
+            query = event_invites.update().where(event_invites.c.id == event_invite_id).values(
+                status=InviteStatus.RECALLED, is_active=False)
             await self._delete_event_user(event_id, from_user_id)
             await database.execute(query=query)
-            message = Messages.EVENT_INVITE.value
+            message = Messages.EVENT_DECLINE.value
             await MessagesService.create(
-                from_user_id, to_user_id, message, event_id, invite, EVENT)
+                from_user_id, to_user_id, message, event_id, event_invite_id, EVENT)
             await UserService.change_user_notifications_status(to_user_id, True)
 
-        #TODO   Invite not accepted yet
+        #TODO  Invite not accepted yet
 
     @database.transaction()
     async def decline_invite(self, event, event_id, sender, message_id):
@@ -74,11 +69,12 @@ class InviteService:
             event_invites.c.id == event_id
         ).where(
             event_invites.c.from_user == sender
-        ).values(status=InviteStatus.DECLINED)
+        ).values(status=InviteStatus.DECLINED, is_active=False)
         # delete MtM table event_users if exist
         await self._delete_event_user(event, sender)
         await database.execute(query=query)
         await MessagesService.change_message_status(message_id)
+        # TODO надоже и оттправителю уведомоение о результатах запроса на участие
 
     @database.transaction()
     async def accept_invite(self, event_id, invites_id, sender, message_id):
@@ -90,6 +86,7 @@ class InviteService:
         await self._create_event_user(event_id, sender)
         await database.execute(query=query)
         await MessagesService.change_message_status(message_id)
+        # TODO надоже и оттправителю уведомоение о результатах запроса на участие
 
     @staticmethod
     async def _create_event_user(event, sender):

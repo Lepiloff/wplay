@@ -110,6 +110,13 @@
                             <td>
                               <a class="btn-floating disabled"><i class="material-icons">do_disturb</i></a>
                             </td>
+                        {% elif invite.status == invite_status.RECALLED %}
+                            <td>
+                              <a class="btn-floating disabled"><i class="material-icons">add_task</i></a>
+                            </td>
+                                                        <td>
+                              <a class="btn-floating disabled"><i class="material-icons">add_task</i></a>
+                            </td>
                           {% endif %}
                       </tr>
                     {% endfor %}
