@@ -41,7 +41,7 @@ async def user_notification(
         service: MessagesService = Depends(),
         user: User = Depends(UserService.get_authenticated_user_id)
 ):
-    messages = await service.get_messages(pk)
+    messages = await service.get_invite_messages(pk)
     messages = messages if messages else {}
     # clear new notification flag
     await UserService.change_user_notifications_status(pk, False)
@@ -57,12 +57,13 @@ async def user_notification(
     )
     # clear notifications flag from request
     request.state._state.pop('user_notifications', None)
-    # hide message with recalled status after first demonstration
-    recalled_messages = [
+    # hide information messages that cannot be accepted or rejected
+    invites = [
         d['id'] for d in messages
-        if 'id' in d and d['status'] == InviteStatus.RECALLED
+        if 'id' in d and d['status'] in (
+            InviteStatus.RECALLED, InviteStatus.ACCEPTED, InviteStatus.DECLINED
+        )
     ]
-    #TODO update in bulk
-    if recalled_messages:
-        await MessagesService.change_message_status(recalled_messages[0])
+    if invites:
+        await MessagesService.change_message_status(invites)
     return response

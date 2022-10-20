@@ -12,7 +12,7 @@ from services.events_invites import InviteService
 from services.user import UserService
 from schemas.event_schema import EventForm, EventBase, EventList, EventSingle
 from helpers.map import Map
-from helpers.utils import CustomURLProcessor, is_show_event_invite_button
+from helpers.utils import CustomURLProcessor
 
 
 router = APIRouter()
@@ -76,15 +76,17 @@ async def get_event(
         request: Request,
         pk: int,
         service: EventsService = Depends(),
+        invite_service: InviteService = Depends(),
         user: users = Depends(UserService.get_authenticated_user_id),
 ):
-    print(user)
     event = await service.get(pk)
     tooltip = event['activity']['name']
     popup = event['title']
     event_coordinate = (event['location']['lat'], event['location']['long'])
     m = await Map(event_coordinate, 15, popup, tooltip).show_event()
-    event_cancel_button, event_invite_button = is_show_event_invite_button(event, user)
+    event_cancel_button, event_invite_button, show_processing_button = (
+        await invite_service.is_show_event_invite_button(event, user)
+    )
     return templates.TemplateResponse(
         'event.html',
         context={
@@ -94,6 +96,7 @@ async def get_event(
             'user': user,
             'cancel_button': event_cancel_button,
             'invite_button': event_invite_button,
+            'processing_button': show_processing_button
         }
     )
 
@@ -127,7 +130,7 @@ async def decline_event_invite(
         user: str = Depends(get_current_user),
         service: InviteService = Depends(),
 ):
-    await service.decline_invite(event, event_invites, sender, message_id)
+    await service.decline_invite(event, event_invites, sender, message_id, user['user_id'])
     redirect_url = request.url_for('user_notification', **{'pk': user['user_id']})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
@@ -142,7 +145,7 @@ async def accept_event_invite(
         user: str = Depends(get_current_user),
         service: InviteService = Depends(),
 ):
-    await service.accept_invite(event, event_invites, sender, message_id)
+    await service.accept_invite(event, event_invites, sender, message_id, user['user_id'])
     redirect_url = request.url_for('user_notification', **{'pk': user['user_id']})
     return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
 
