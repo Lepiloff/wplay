@@ -1,6 +1,6 @@
-from typing import List, Optional
+from typing import List
 
-from fastapi import APIRouter, Request, Form, Depends
+from fastapi import APIRouter, Depends, Request, Response
 from fastapi.templating import Jinja2Templates
 from starlette.responses import RedirectResponse
 import starlette.status as status
@@ -11,6 +11,7 @@ from services.events import EventsService
 from services.events_invites import InviteService
 from services.user import UserService
 from schemas.event_schema import EventForm, EventBase, EventList, EventSingle
+from helpers.constants import EventNotification
 from helpers.map import Map
 from helpers.utils import CustomURLProcessor
 
@@ -112,12 +113,18 @@ async def join_to_event(
 ):
     event = await event_service.get(pk)
     creator_id = event['creator']
-    await service.request_to_join(pk, creator_id, from_user['user_id'])
-    # TODO success messages with data from invite result
-    # TODO possible to get all data info from invite variable ?
-    # TODO нельзя сделать повторный запрос после отправки первого
+    result = await service.request_to_join(pk, creator_id, from_user['user_id'])
     redirect_url = request.url_for('get_event', **{'pk': event['id']})
-    return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+    response = RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+    message = EventNotification.SUCCESS.value if result else EventNotification.NOT_SUCCESS.value
+    response.set_cookie(
+        'event_notifications',
+        value=message,
+        httponly=True,
+        max_age=3,
+        expires=3,
+    )
+    return response
 
 
 @router.post('/invite/decline')

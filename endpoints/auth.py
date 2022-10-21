@@ -34,7 +34,7 @@ async def login(
     )
     response = RedirectResponse(url='/')
     response.set_cookie(
-        "Authorization",
+        'Authorization',
         value=session['session_id'],
         httponly=True,
         max_age=3600,

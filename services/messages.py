@@ -52,3 +52,13 @@ class MessagesService:
     async def change_message_status(message_ids: List):
         query = messages.update().where(messages.c.id.in_(message_ids))
         await database.execute(query=query, values={'is_read': True})
+
+    @staticmethod
+    async def get_invite_message(from_user_id, to_user_id, event_id):
+        query = select([messages.c.id]).where(
+            messages.c.from_user == from_user_id).where(
+            messages.c.to_user == to_user_id,
+            messages.c.to_event == event_id,
+            messages.c.is_read is False
+        )
+        return await database.execute(query=query)

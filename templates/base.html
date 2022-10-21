@@ -70,6 +70,25 @@
       <li><a href="#signup-modal" class="btn purple modal-trigger">Sign up</a></li>
 </ul>
 
+{% block event_notification %}
+    {% if request.cookies.event_notifications %}
+    <section class="section section-message ">
+  <div class="container" >
+<div class="row">
+    <div class="col s12 m10 l10 offset-m1 offset-l1">
+        <div class="chip green" style="padding: 10px 10px 10px 10px; width: 100%; height: 50px;">
+            <i class=" close material-icons right white-text">close</i>
+            <i class="material-icons white-text left" style="padding-top: 2px;">check_circle</i>
+            <h6 class="white-text"><b>{{ request.cookies.event_notifications }}</b></h6>
+        </div>
+    </div>
+</div>
+  </div>
+</section>
+    {% endif %}
+{% endblock event_notification %}
+
+
 {% block content %}
     <!-- Section: Action -->
 <section class="section section-about ">
@@ -79,7 +98,7 @@
         <h3>
           <span class="deep-purple-text text-darken-1">About</span> Us</h3>
           <div class="divider"></div>
-        <p class="flow-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid odio eum magnam aut at voluptates omnis sint reiciendis
+        <p class="flow-text">LOREM ipsum dolor sit amet consectetur adipisicing elit. Aliquid odio eum magnam aut at voluptates omnis sint reiciendis
           dolorem recusandae.</p>
 
           <button class="btn red waves-effect waves-light" type="submit" name="action">Submit
@@ -105,7 +124,7 @@
           <div class="divider"></div>
         <p class="flow-text">Lorem ipsum dolor sit amet consectetur adipisicing elit. Aliquid odio eum magnam aut at voluptates omnis sint reiciendis
           dolorem recusandae.</p>
-          <button class="btn red waves-effect waves-light center" type="submit" name="action">Submit
+          <button class="btn red waves-effect waves-light center" type="submit" name="action">Submitt
           </button>
       </div>
     </div>

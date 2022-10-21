@@ -61,29 +61,35 @@ class InviteService:
 
     @database.transaction()
     async def decline_to_participate_in(self, event_id, to_user_id, from_user_id):
-        # Надо учесть 2 случая, когда запрос уже был принят и когда еще нет
-
         # Invite accepted already
-        query = select([event_invites.c.id]).where(
+        query = select([event_invites.c.id, event_invites.c.status]).where(
             event_invites.c.from_user == from_user_id).where(
             event_invites.c.to_user == to_user_id,
             event_invites.c.to_event == event_id,
             event_invites.c.is_active.is_(True)
         )
-        event_invite_id = await database.execute(query=query)
-        if event_invite_id:
-            query = event_invites.update().where(event_invites.c.id == event_invite_id).values(
+        result = await database.fetch_one(query=query)
+        event_invite = dict(result) if result else {}
+        if event_invite and event_invite['status'] == InviteStatus.ACCEPTED:
+            query = event_invites.update().where(event_invites.c.id == event_invite['id']).values(
                 status=InviteStatus.RECALLED, is_active=False)
-            await self._delete_event_user(event_id, from_user_id)
             await database.execute(query=query)
+            await self._delete_event_user(event_id, from_user_id)
             message = Messages.EVENT_DECLINE.value
             await MessagesService.create(
-                from_user_id, to_user_id, message, event_id, event_invite_id, EVENT)
+                from_user_id, to_user_id, message, event_id, event_invite['id'], EVENT)
             await UserService.change_user_notifications_status(to_user_id, True)
-
         # Invite not accepted yet
-
-        # TODO  Invite not accepted yet
+        # TODO тут нужна другая кнопка, рядом с кнопкой ожидания и вынести в отдельный метод тогда )
+        elif event_invite and event_invite['status'] == InviteStatus.CREATED:
+            query = event_invites.update().where(event_invites.c.id == event_invite['id']).values(
+                status=InviteStatus.RECALLED, is_active=False)
+            await database.execute(query=query)
+            message_id = MessagesService.get_invite_message(from_user_id, to_user_id, event_id)
+            await MessagesService.change_message_status([message_id])
+        # TODO какуюо логику если вдруг не найдет ничего хотя такого по идее не может быть
+        else:
+            pass
 
     @database.transaction()
     async def decline_invite(self, event, invites_id, sender, message_id, owner_id):
@@ -94,7 +100,7 @@ class InviteService:
         # delete MtM table event_users if exist
         await self._delete_event_user(event, sender)
         await database.execute(query=query)
-        await MessagesService.change_message_status(list(message_id))
+        await MessagesService.change_message_status([message_id])
         message = Messages.REQUEST_REJECTED.value
         await MessagesService.create(
             owner_id, sender, message, event, invites_id, EVENT)
@@ -109,7 +115,7 @@ class InviteService:
         # create MtM table event_users
         await self._create_event_user(event_id, sender)
         await database.execute(query=query)
-        await MessagesService.change_message_status(list(message_id))
+        await MessagesService.change_message_status([message_id])
         message = Messages.REQUEST_CONFIRM.value
         await MessagesService.create(
             owner_id, sender, message, event_id, invites_id, EVENT)
