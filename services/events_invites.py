@@ -60,7 +60,7 @@ class InviteService:
         return invite
 
     @database.transaction()
-    async def decline_to_participate_in(self, event_id, to_user_id, from_user_id):
+    async def decline_to_participate_in(self, event_id, to_user_id, from_user_id) -> bool:
         # Invite accepted already
         query = select([event_invites.c.id, event_invites.c.status]).where(
             event_invites.c.from_user == from_user_id).where(
@@ -79,17 +79,16 @@ class InviteService:
             await MessagesService.create(
                 from_user_id, to_user_id, message, event_id, event_invite['id'], EVENT)
             await UserService.change_user_notifications_status(to_user_id, True)
+            return True
         # Invite not accepted yet
         # TODO тут нужна другая кнопка, рядом с кнопкой ожидания и вынести в отдельный метод тогда )
-        elif event_invite and event_invite['status'] == InviteStatus.CREATED:
-            query = event_invites.update().where(event_invites.c.id == event_invite['id']).values(
-                status=InviteStatus.RECALLED, is_active=False)
-            await database.execute(query=query)
-            message_id = MessagesService.get_invite_message(from_user_id, to_user_id, event_id)
-            await MessagesService.change_message_status([message_id])
-        # TODO какуюо логику если вдруг не найдет ничего хотя такого по идее не может быть
-        else:
-            pass
+        # elif event_invite and event_invite['status'] == InviteStatus.CREATED:
+        #     query = event_invites.update().where(event_invites.c.id == event_invite['id']).values(
+        #         status=InviteStatus.RECALLED, is_active=False)
+        #     await database.execute(query=query)
+        #     message_id = MessagesService.get_invite_message(from_user_id, to_user_id, event_id)
+        #     await MessagesService.change_message_status([message_id])
+
 
     @database.transaction()
     async def decline_invite(self, event, invites_id, sender, message_id, owner_id):
@@ -107,7 +106,7 @@ class InviteService:
         await UserService.change_user_notifications_status(sender, True)
 
     @database.transaction()
-    async def accept_invite(self, event_id, invites_id, sender, message_id, owner_id):
+    async def accept_invite(self, event_id, invites_id, sender, message_id, owner_id)->bool:
         query = event_invites.update().where(
             (event_invites.c.id == invites_id)
             & (event_invites.c.from_user == sender)

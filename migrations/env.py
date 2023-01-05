@@ -1,3 +1,4 @@
+from os import environ
 import sys
 
 from logging.config import fileConfig
@@ -9,6 +10,9 @@ from alembic import context
 
 
 sys.path = ['', '..'] + sys.path[1:]
+
+config = context.config
+
 
 from db import metadata
 
@@ -23,7 +27,6 @@ from models.messages import messages
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
-config = context.config
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
@@ -34,6 +37,12 @@ fileConfig(config.config_file_name)
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
 target_metadata = metadata
+
+section = config.config_ini_section
+config.set_section_option(section, "DB_USER", environ.get("DB_USER"))
+config.set_section_option(section, "DB_PASS", environ.get("DB_PASS"))
+config.set_section_option(section, "DB_NAME", environ.get("DB_NAME"))
+config.set_section_option(section, "DB_HOST", environ.get("DB_HOST"))
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:

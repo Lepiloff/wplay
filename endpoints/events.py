@@ -13,7 +13,7 @@ from services.user import UserService
 from schemas.event_schema import EventForm, EventBase, EventList, EventSingle
 from helpers.constants import EventNotification
 from helpers.map import Map
-from helpers.utils import CustomURLProcessor
+from helpers.utils import CustomURLProcessor, add_event_message_to_response
 
 
 router = APIRouter()
@@ -116,15 +116,7 @@ async def join_to_event(
     result = await service.request_to_join(pk, creator_id, from_user['user_id'])
     redirect_url = request.url_for('get_event', **{'pk': event['id']})
     response = RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
-    message = EventNotification.SUCCESS.value if result else EventNotification.NOT_SUCCESS.value
-    response.set_cookie(
-        'event_notifications',
-        value=message,
-        httponly=True,
-        max_age=3,
-        expires=3,
-    )
-    return response
+    return await add_event_message_to_response(response, result)
 
 
 @router.post('/invite/decline')
@@ -165,6 +157,7 @@ async def cancel_participation(
         user: str = Depends(get_current_user),
         service: InviteService = Depends(),
 ):
-    await service.decline_to_participate_in(event_id, event_owner, user['user_id'])
+    result = await service.decline_to_participate_in(event_id, event_owner, user['user_id'])
     redirect_url = request.url_for('get_event', **{'pk': event_id})
-    return RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+    response = RedirectResponse(redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+    return await add_event_message_to_response(response, result)

@@ -3,43 +3,12 @@ from geopy.geocoders import Nominatim, GoogleV3
 import urllib
 from functools import lru_cache
 
-from fastapi import Request
-from typing import Dict
+from fastapi import Request, Response
+from typing import Any, Dict
 import sqlalchemy.types as types
 
 from config import Settings
-
-
-async def get_coord(country, city, street, house):
-    # Try to get coordinate using free Nominatim, else try with GoogleV3 (paid)
-    async with Nominatim(
-            user_agent='wonna_train',
-            adapter_factory=AioHTTPAdapter,
-    ) as geolocator:
-        location = await geolocator.geocode(f'{country} {city} {street} {house}', timeout=10)
-    try:
-        lat, lon = (location.latitude, location.longitude)
-    except AttributeError:
-        async with GoogleV3(
-                api_key=get_settings().google_maps_api_key,
-                adapter_factory=AioHTTPAdapter
-        ) as geolocator:
-            location = await geolocator.geocode(f'{country} {city} {street} {house}', timeout=10)
-            lat, lon = (location.latitude, location.longitude)
-    return lat, lon
-
-
-async def str_to_int(data: Dict) -> Dict:
-    return {key: (int(value) if value.isdigit() else value) for key, value in data.items()}
-
-
-async def bool_to_int(data: Dict) -> Dict:
-    return {key: (int(value) if isinstance(value, bool) else value) for key, value in data.items()}
-
-
-@lru_cache()
-def get_settings():
-    return Settings()
+from helpers.constants import EventNotification
 
 
 class EnumAsInteger(types.TypeDecorator):
@@ -85,3 +54,47 @@ class CustomURLProcessor:
         parsed = list(urllib.parse.urlparse(self.path))
         parsed[4] = urllib.parse.urlencode(params)
         return urllib.parse.urlunparse(parsed)
+
+
+async def get_coord(country, city, street, house):
+    # Try to get coordinate using free Nominatim, else try with GoogleV3 (paid)
+    async with Nominatim(
+            user_agent='wonna_train',
+            adapter_factory=AioHTTPAdapter,
+    ) as geolocator:
+        location = await geolocator.geocode(f'{country} {city} {street} {house}', timeout=10)
+    try:
+        lat, lon = (location.latitude, location.longitude)
+    except AttributeError:
+        async with GoogleV3(
+                api_key=get_settings().google_maps_api_key,
+                adapter_factory=AioHTTPAdapter
+        ) as geolocator:
+            location = await geolocator.geocode(f'{country} {city} {street} {house}', timeout=10)
+            lat, lon = (location.latitude, location.longitude)
+    return lat, lon
+
+
+async def str_to_int(data: Dict) -> Dict:
+    return {key: (int(value) if value.isdigit() else value) for key, value in data.items()}
+
+
+async def bool_to_int(data: Dict) -> Dict:
+    return {key: (int(value) if isinstance(value, bool) else value) for key, value in data.items()}
+
+
+@lru_cache()
+def get_settings():
+    return Settings()
+
+
+async def add_event_message_to_response(response: Response, result: bool) -> Response:
+    message = EventNotification.SUCCESS.value if result else EventNotification.NOT_SUCCESS.value
+    response.set_cookie(
+        'event_notifications',
+        value=message,
+        httponly=True,
+        max_age=3,
+        expires=3,
+    )
+    return response
