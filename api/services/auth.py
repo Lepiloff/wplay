@@ -1,5 +1,5 @@
+import os
 from datetime import datetime, timedelta
-from decouple import config
 from jose import JWTError, jwt
 from passlib.hash import bcrypt
 
@@ -43,8 +43,8 @@ class AuthService:
         try:
             payload = jwt.decode(
                 token,
-                config('JWT_SECRET'),
-                algorithms=config('JWT_ALGORITHM'),
+                os.getenv('JWT_SECRET'),
+                algorithms=os.getenv('JWT_ALGORITHM'),
             )
         except JWTError:
             raise exception from None
@@ -63,15 +63,15 @@ class AuthService:
         payload = {
             'iat': now,
             'nbf': now,
-            'exp': now + timedelta(seconds=int(config('JWT_EXPIRATION'))),
+            'exp': now + timedelta(seconds=int(os.getenv('JWT_EXPIRATION'))),
             'sub': str(user_data['id']),
             'user': user_data,
         }
         payload_to_json = jsonable_encoder(payload)
         token = jwt.encode(
             payload_to_json,
-            config('JWT_SECRET'),
-            algorithm=config('JWT_ALGORITHM'),
+            os.getenv('JWT_SECRET'),
+            algorithm=os.getenv('JWT_ALGORITHM'),
         )
         return Token(access_token=token)
 

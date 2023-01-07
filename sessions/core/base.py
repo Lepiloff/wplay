@@ -1,8 +1,7 @@
-import json
+import os
 from aioredis import Redis, from_url
 # from redis import asyncio as aioredis
 
-from decouple import config
 
 from typing import Optional
 
@@ -11,9 +10,10 @@ class RedisCache:
 
     def __init__(self):
         self.redis_cache: Optional[Redis] = None
+        self.redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
 
     async def init_cache(self):
-        self.redis_cache = from_url("redis://localhost",  decode_responses=True)
+        self.redis_cache = from_url(self.redis_url,  decode_responses=True)
 
     async def keys(self, pattern):
         return await self.redis_cache.keys(pattern)

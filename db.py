@@ -4,8 +4,8 @@ import databases
 import sqlalchemy
 
 
-DEFAULT_DATABASE_URL = f"postgresql://{config('DB_USER')}:{config('DB_PASS')}" \
-                       f"@{config('DB_HOST')}:5432/{config('DB_NAME')}"
+DEFAULT_DATABASE_URL = f"postgresql://{os.getenv('DB_USER')}:{os.getenv('DB_PASS')}" \
+                       f"@{os.getenv('DB_HOST')}:5432/{os.getenv('DB_NAME')}"
 DATABASE_URL = (os.getenv('DATABASE_URL', DEFAULT_DATABASE_URL))
 
 database = databases.Database(DATABASE_URL)
