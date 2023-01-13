@@ -1,5 +1,4 @@
 import os
-from decouple import config
 import databases
 import sqlalchemy
 
