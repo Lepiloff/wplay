@@ -62,8 +62,8 @@ SQLAlchemy==1.4.39
 starlette==0.17.1
 typing-extensions==3.7.4.3
 urllib3==1.26.3
-uvicorn==0.13.3
-uvloop==0.16.0
+uvicorn==0.20.0
+uvloop==0.17.0
 watchgod==0.6
 websockets==8.1
 wrapt==1.14.1
