@@ -28,7 +28,7 @@ future==0.18.2
 geographiclib==1.52
 geopy==2.2.0
 greenlet==1.1.2
-h11==0.12.0
+h11==0.14.0
 hiredis==2.0.0
 httptools==0.4.0
 idna==2.10
