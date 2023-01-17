@@ -12,7 +12,7 @@ from routes import api_router
 from sessions.core.base import redis_cache
 
 app = FastAPI()
-# app.add_middleware(HTTPSRedirectMiddleware)
+app.add_middleware(HTTPSRedirectMiddleware)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
