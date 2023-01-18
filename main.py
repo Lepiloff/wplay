@@ -1,5 +1,4 @@
 import math
-from typing import Any
 
 from fastapi import FastAPI, Request, Form
 from fastapi.staticfiles import StaticFiles
@@ -15,16 +14,6 @@ app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-
-
-# standard url_for method generate http instead https links
-def https_url_for(context: dict, name: str, **path_params) -> str:
-    request = context["request"]
-    http_url = request.url_for(name, **path_params)
-    return http_url.replace("http", "https", 1)
-
-
-templates.env.globals["url_for"] = https_url_for
 # TODO add status_code
 
 
