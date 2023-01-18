@@ -11,7 +11,7 @@ from routes import api_router
 from sessions.core.base import redis_cache
 
 app = FastAPI()
-app.config["PREFERRED_URL_SCHEME"] = "https"
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 # TODO add status_code
