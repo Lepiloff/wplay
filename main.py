@@ -13,6 +13,7 @@ from sessions.core.base import redis_cache
 
 @pass_context
 def https_url_for(context: dict, name: str, **path_params) -> str:
+    print('Running https_url_for')
     request = context["request"]
     http_url = request.url_for(name, **path_params)
     return http_url.replace("http", "https", 1)
