@@ -44,7 +44,7 @@ passlib==1.7.4
 psycopg2-binary==2.8.6
 pyasn1==0.4.8
 pycparser==2.20
-pydantic==1.9.0
+pydantic
 pyparsing==3.0.9
 python-dateutil==2.8.1
 python-dotenv==0.15.0
@@ -59,8 +59,8 @@ rsa==4.7.2
 six==1.15.0
 sniffio==1.2.0
 SQLAlchemy==1.4.39
-starlette==0.22.0
-typing-extensions==3.7.4.3
+starlette
+typing-extensions
 urllib3==1.26.3
 uvicorn==0.20.0
 uvloop==0.17.0
