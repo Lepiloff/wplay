@@ -16,7 +16,8 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 # TODO add status_code
 
-
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
+app.add_middleware(HTTPSRedirectMiddleware)
 @app.on_event("startup")
 async def startup():
     await database.connect()
