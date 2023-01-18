@@ -10,7 +10,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
-@router.get('/', response_class=HTMLResponse,  include_in_schema=False)
+@router.get('/', response_class=HTMLResponse)
 async def main_page(request: Request,
                     user: User = Depends(UserService.get_authenticated_user_id)
                     ):
