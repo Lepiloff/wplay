@@ -3,6 +3,7 @@ import math
 from fastapi import FastAPI, Request, Form
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 
 from db import database
 from helpers.middleware import get_user_notifications, set_custom_attr
@@ -13,6 +14,7 @@ from sessions.core.base import redis_cache
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.add_middleware(HTTPSRedirectMiddleware)
 templates = Jinja2Templates(directory="templates")
 # TODO add status_code
 
