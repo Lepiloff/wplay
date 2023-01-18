@@ -5,14 +5,13 @@
   <!--Import Google Icon Font-->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <!--Import materialize.css-->
-{#  <link type="text/css" href="{{ url_for('static', path='/css/materialize.min.css') }}" rel="stylesheet">#}
-{#  <link type="text/css" href="{{ url_for('static', path='/css/custom.css') }}" rel="stylesheet">#}
-  <link type="text/css" href="static/css/materialize.min.css" rel="stylesheet">
-  <link type="text/css" href="static/css/custom.css" rel="stylesheet">
+  <link type="text/css" href="{{ url_for('static', path='/css/materialize.min.css') }}" rel="stylesheet">
+  <link type="text/css" href="{{ url_for('static', path='/css/custom.css') }}" rel="stylesheet">
+
   <script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
   <!--Let browser know website is optimized for mobile-->
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}wplay - поиск партнера или команды для занятий спортом{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"/>
+  <title>{% block title %}Finding a sports partner or team{% endblock %}</title>
 </head>
 
 <body>
