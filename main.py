@@ -5,23 +5,15 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from db import database
-from jinja2 import pass_context
 from helpers.middleware import get_user_notifications, set_custom_attr
 from models.users import users
 from routes import api_router
 from sessions.core.base import redis_cache
 
-@pass_context
-def https_url_for(context: dict, name: str, **path_params) -> str:
-    request = context["request"]
-    http_url = request.url_for(name, **path_params)
-    return http_url.replace("http", "https", 1)
-
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["url_for"] = https_url_for
 # TODO add status_code
 
 
