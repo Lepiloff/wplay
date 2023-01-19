@@ -98,3 +98,9 @@ async def add_event_message_to_response(response: Response, result: bool) -> Res
         expires=3,
     )
     return response
+
+
+def https_url_for(request: Request, name: str, **path_params: Any) -> str:
+    http_url = request.url_for(name, **path_params)
+    # Replace 'http' with 'https'
+    return http_url.replace('http', 'https', 1)
