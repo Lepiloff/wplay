@@ -1,4 +1,5 @@
 import math
+from typing import Any
 
 from fastapi import FastAPI, Request, Form
 from fastapi.staticfiles import StaticFiles
@@ -14,7 +15,16 @@ app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
-# TODO add status_code
+
+
+def https_url_for(request: Request, name: str, **path_params: Any) -> str:
+
+    http_url = request.url_for(name, **path_params)
+
+    # Replace 'http' with 'https'
+    return http_url.replace("http", "https", 1)
+
+templates.env.globals["https_url_for"] = https_url_for
 
 
 @app.on_event("startup")
@@ -48,7 +58,7 @@ app.include_router(api_router)
 
 
 
-
+# TODO add status_code
 #TODO в модели user поле is_notified сделать index=True
 #TODO чекнуть может ли одна локация быть у разных ивентов (если это например спортцентр)
 #TODO почекать на удаление связанных таблиц (ONDELATE = ....)
