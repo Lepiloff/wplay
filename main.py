@@ -3,7 +3,6 @@ from typing import Any
 
 from fastapi import FastAPI, Request, Form
 from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
 from fastapi.templating import Jinja2Templates
 
 from db import database
@@ -14,8 +13,9 @@ from sessions.core.base import redis_cache
 
 
 app = FastAPI()
-app.add_middleware(HTTPSRedirectMiddleware, permanent=False)
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
 templates = Jinja2Templates(directory="templates")
 
 
