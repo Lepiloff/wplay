@@ -27,7 +27,7 @@ async def shutdown():
 
 
 @app.on_event('startup')
-async def starup_event():
+async def startup_event():
     await redis_cache.init_cache()
 
 
