@@ -4,10 +4,12 @@ from fastapi.responses import HTMLResponse
 
 from services.user import UserService
 from models.users import users as User
+from main import https_url_for
 
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
+templates.env.globals["https_url_for"] = https_url_for
 
 
 @router.get('/', response_class=HTMLResponse)
