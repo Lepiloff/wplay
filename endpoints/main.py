@@ -7,15 +7,7 @@ from models.users import users as User
 
 
 router = APIRouter()
-def https_url_for(request: Request, name: str, **path_params) -> str:
-
-    http_url = request.url_for(name, **path_params)
-
-    # Replace 'http' with 'https'
-    return http_url.replace("http", "https", 1)
-
 templates = Jinja2Templates(directory="templates")
-templates.env.globals["https_url_for"] = https_url_for
 
 
 @router.get('/', response_class=HTMLResponse)
