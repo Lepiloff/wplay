@@ -338,8 +338,7 @@
 
 <!--Import jQuery before materialize.js-->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-<script src="{{ url_for('static', path='js/materialize.min.js') }}"></script>
-
+<script src="{{https_url_for(request, 'static', path='js/materialize.min.js') }}"></script>
  <!--Custom script-->
 <script>
 $(document).ready(function(){
