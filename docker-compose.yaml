@@ -4,7 +4,7 @@ services:
   web:
     env_file: .env
     build: .
-    command: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000 --reload --forwarded-allow-ips="*""
+    command: sh -c "alembic upgrade head && uvicorn main:app --host 0.0.0.0 --port 8000 --reload --proxy-headers --forwarded-allow-ips="*""
     volumes:
       - .:/app
     ports:
