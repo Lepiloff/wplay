@@ -22,8 +22,7 @@ async def main_page(request: Request,
                                       )
 
 
-@router.get('/test_static', response_class=FileResponse)
-async def main_page(request: Request,
-                    ):
-    return FileResponse('base.html','static/img/6517.svg'
-                                      )
+@router.get("/download")
+async def download_file():
+    file_path = "static/img/6517.svg"
+    return FileResponse(file_path, filename="my_file.svg", media_type="image/svg+xml")
