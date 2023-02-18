@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Form, Depends
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 
 from services.user import UserService
 from models.users import users as User
@@ -19,4 +19,11 @@ async def main_page(request: Request,
                                           'request': request,
                                           'user': user,
                                       }
+                                      )
+
+
+@router.get('/test_static', response_class=FileResponse)
+async def main_page(request: Request,
+                    ):
+    return FileResponse('base.html','static/img/6517.svg'
                                       )
