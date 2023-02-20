@@ -37,4 +37,4 @@ async def shutdown():
 
 
 # Custom endpoints
-app.include_router(api_router)
+# app.include_router(api_router)
