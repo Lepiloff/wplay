@@ -10,11 +10,12 @@ templates = Jinja2Templates(directory="templates")
 
 # dont change method order
 @router.get('/all')
-async def _events():
+async def _events(request: Request):
     return templates.TemplateResponse('base.html',
-                                      context={'request': Request,
+                                      context={'request': request,
                                       }
                                       )
+
 #
 #
 # @router.post('/all')
