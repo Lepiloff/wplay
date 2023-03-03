@@ -9,6 +9,7 @@ from helpers.utils import get_settings
 #TODO async ?
 class Map:
     def __init__(self, event_coordinate=None, zoom_start=15, popup=None, tooltip=None):
+        self.session = None
         self.event_coordinate = event_coordinate
         self.zoom_start = zoom_start
         self.popup = popup
@@ -26,7 +27,6 @@ class Map:
     async def show_event(self):
         return await self._add_marker(await self._init_map())
 
-    # TODO в консоли пишет Unclosed client session   , надо закрыть соединение
     async def show_events(self, event_list):
         m = await self._init_map()
         for event in event_list:
@@ -40,13 +40,17 @@ class Map:
         return m
 
     async def _init_map(self):
-        if self.event_coordinate:
-            return folium.Map(location=self.event_coordinate, zoom_start=self.zoom_start)
-        else:
-            return folium.Map(
-                location=await self._get_city_center_coord(),
-                zoom_start=self.zoom_start
-            )
+        if self.session is None:
+            self.session = aiohttp.ClientSession()
+        with self.session:
+            if self.event_coordinate:
+                return folium.Map(location=self.event_coordinate, zoom_start=self.zoom_start)
+            else:
+                lat, lon = await Map.get_city_center_coord()
+                return folium.Map(
+                    location=list((lat, lon)),
+                    zoom_start=self.zoom_start
+                )
 
     async def _add_marker(self, m):
         folium.Marker(
