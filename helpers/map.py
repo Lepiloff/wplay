@@ -16,10 +16,9 @@ class Map:
 
     @staticmethod
     async def _get_city_center_coord():
-        async with aiohttp.ClientSession() as session:
-            handler = ipinfo.AsyncHandler(get_settings().ipinfo_access_token, session=session)
-            details = await handler.getDetails()
-            lat, lon = (details.latitude, details.longitude)
+        handler = ipinfo.getHandlerAsync(get_settings().ipinfo_access_token)
+        details = await handler.getDetails()
+        lat, lon = (details.latitude, details.longitude)
         return lat, lon
 
     async def show_event(self):
