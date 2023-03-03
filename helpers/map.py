@@ -46,7 +46,7 @@ class Map:
             if self.event_coordinate:
                 return folium.Map(location=self.event_coordinate, zoom_start=self.zoom_start)
             else:
-                lat, lon = await Map.get_city_center_coord()
+                lat, lon = await self._get_city_center_coord()
                 return folium.Map(
                     location=list((lat, lon)),
                     zoom_start=self.zoom_start
