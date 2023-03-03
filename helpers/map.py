@@ -6,20 +6,9 @@ import folium
 from helpers.utils import get_settings
 
 
-class ClientSessionManager:
-    _session = None
-
-    @staticmethod
-    def get_session():
-        if not ClientSessionManager._session:
-            ClientSessionManager._session = aiohttp.ClientSession()
-        return ClientSessionManager._session
-
-
 #TODO async ?
 class Map:
     def __init__(self, event_coordinate=None, zoom_start=15, popup=None, tooltip=None):
-        self.session = ClientSessionManager.get_session()
         self.event_coordinate = event_coordinate
         self.zoom_start = zoom_start
         self.popup = popup
@@ -28,8 +17,7 @@ class Map:
     @staticmethod
     async def _get_city_center_coord():
         async with aiohttp.ClientSession() as session:
-            access_token = get_settings().ipinfo_access_token
-            handler = ipinfo.AsyncHandler(access_token, session=session)
+            handler = ipinfo.AsyncHandler(get_settings().ipinfo_access_token, session=session)
             details = await handler.getDetails()
             lat, lon = (details.latitude, details.longitude)
         return lat, lon
@@ -37,6 +25,7 @@ class Map:
     async def show_event(self):
         return await self._add_marker(await self._init_map())
 
+    # TODO в консоли пишет Unclosed client session   , надо закрыть соединение
     async def show_events(self, event_list):
         m = await self._init_map()
         for event in event_list:
@@ -50,17 +39,13 @@ class Map:
         return m
 
     async def _init_map(self):
-        if self.session is None:
-            self.session = aiohttp.ClientSession()
-        async with self.session:
-            if self.event_coordinate:
-                return folium.Map(location=self.event_coordinate, zoom_start=self.zoom_start)
-            else:
-                lat, lon = await self._get_city_center_coord()
-                return folium.Map(
-                    location=list((lat, lon)),
-                    zoom_start=self.zoom_start
-                )
+        if self.event_coordinate:
+            return folium.Map(location=self.event_coordinate, zoom_start=self.zoom_start)
+        else:
+            return folium.Map(
+                location=await self._get_city_center_coord(),
+                zoom_start=self.zoom_start
+            )
 
     async def _add_marker(self, m):
         folium.Marker(
@@ -70,7 +55,6 @@ class Map:
             icon=folium.Icon(color="red", icon="info-sign")
         ).add_to(m)
         return m
-
 
 
 
