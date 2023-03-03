@@ -42,7 +42,7 @@ class Map:
     async def _init_map(self):
         if self.session is None:
             self.session = aiohttp.ClientSession()
-        with self.session:
+        async with self.session:
             if self.event_coordinate:
                 return folium.Map(location=self.event_coordinate, zoom_start=self.zoom_start)
             else:
