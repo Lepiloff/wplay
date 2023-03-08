@@ -1,9 +1,11 @@
+import boto3
 import os
 import base64
 
 from sqlalchemy import select
 from passlib.hash import bcrypt
 
+from jinja2 import Template
 from fastapi import HTTPException, status
 
 from db import database
@@ -38,6 +40,42 @@ async def is_authenticated(request: Request):
 # TODO async ?   разобраться с класс методами , нужны ли они тут
 class AuthService:
 
+    @staticmethod
+    def generate_email_body(user_data: UserCreate, verification_token: str) -> str:
+        with open("email_template.html") as file:
+            template = Template(file.read())
+        return template.render(
+            first_name=user_data.first_name,
+            confirmation_url=f"https://team-mate.app/auth/confirm_email?token={verification_token}"
+        )
+
+    def send_confirmation_email(self, user_data: UserCreate, verification_token: str):
+        ses_client = boto3.client("ses", region_name="eu-central-1")
+        sender_email = "evgenylepilov@gmail.com"
+        recipient_email = user_data.email
+        email_subject = "Please confirm your email address"
+        email_body = self.generate_email_body(user_data,
+                                         verification_token)
+        response = ses_client.send_email(
+            Destination={
+                "ToAddresses": [recipient_email]
+            },
+            Message={
+                "Body": {
+                    "Html": {
+                        "Charset": "UTF-8",
+                        "Data": email_body
+                    }
+                },
+                "Subject": {
+                    "Charset": "UTF-8",
+                    "Data": email_subject
+                }
+            },
+            Source=sender_email
+        )
+        print(f"Confirmation email sent to {recipient_email}. Message ID: {response['MessageId']}")
+
     @classmethod
     def verify_password(cls, plain_password: str, hashed_password: str) -> bool:
         return bcrypt.verify(plain_password, hashed_password)
@@ -48,9 +86,11 @@ class AuthService:
 
     @database.transaction()
     async def register_new_user(self, user_data: UserCreate):
+        verification_token=await self.generate_session_id()
         query = users.insert().values(
             email=user_data.email, phone=user_data.phone,
-            hashed_password=self.hash_password(user_data.password)
+            hashed_password=self.hash_password(user_data.password),
+            email_verification_token=verification_token,
         )
         #TODO отлавливать ошибки типа если есть такой email, сейчас все ломается
         user_id = await database.execute(query)
@@ -61,7 +101,9 @@ class AuthService:
             gender=user_data.gender
         )
         await database.execute(query)
+        self.send_confirmation_email(user_data, verification_token)
         return user_id
+
 
     @classmethod
     async def get_user_by_email(cls, email: str):
@@ -103,5 +145,7 @@ class AuthService:
             raise exception
         del user['hashed_password']
         return await self.create_session(user)
+
+
 
 

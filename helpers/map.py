@@ -14,17 +14,16 @@ class Map:
         self.popup = popup
         self.tooltip = tooltip
 
-    @staticmethod
-    async def _get_city_center_coord():
-        handler = ipinfo.getHandlerAsync(get_settings().ipinfo_access_token)
-        details = await handler.getDetails()
-        lat, lon = (details.latitude, details.longitude)
-        return lat, lon
+    async def _get_city_center_coord(self):
+        async with aiohttp.ClientSession() as session:
+            async with session.get('https://ipinfo.io/json') as response:
+                data = await response.json()
+                lat, lon = (data['loc'].split(',')[0], data['loc'].split(',')[1])
+                return lat, lon
 
     async def show_event(self):
         return await self._add_marker(await self._init_map())
 
-    # TODO в консоли пишет Unclosed client session   , надо закрыть соединение
     async def show_events(self, event_list):
         m = await self._init_map()
         for event in event_list:

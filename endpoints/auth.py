@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, Depends, Request, status, HTTPException
 from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordRequestForm
 from starlette.responses import RedirectResponse
+from sqlalchemy.sql.expression import select, update
 
+from db import database
 from config import Settings
 from helpers.utils import bool_to_int, get_settings
 from models.users import users as User
@@ -10,6 +12,7 @@ from schemas.user_schema import UserCreateForm
 from services.auth import AuthService, get_current_user
 from services.user import UserService
 from sessions.core.base import redis_cache
+
 
 
 
@@ -81,6 +84,28 @@ async def logout(request: Request,
         await redis_cache.delete(user_session)
     await redis_cache.hdel(get_settings().user_session_id, str(user['user_id']))
     return response
+
+
+@router.get("/confirm_email")
+async def confirm_email(token: str):
+    # Check if the token exists in the database
+    query = select([User.c.id, User.c.is_active]).where(User.c.email_verification_token == token)
+    result = await database.fetch_one(query)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Verification token not found")
+
+    # Update the user's email confirmation status if the token is valid
+    user_id, is_active = result
+    if not is_active:
+        query = (
+            update(User)
+            .where(User.c.id == user_id)
+            .values(is_active=True, email_verification_token=None)
+        )
+        await database.execute(query)
+        return {"message": "Email confirmed successfully!"}
+    else:
+        raise HTTPException(status_code=400, detail="Email address has already been confirmed")
 
 
 @router.get('/current_user')
