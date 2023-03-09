@@ -97,7 +97,9 @@ async def confirm_email(token: str):
 
     # Update the user's email confirmation status if the token is valid
     user_id, is_active = result
-    if not is_active:
+    if is_active is not None and is_active:
+        raise HTTPException(status_code=400, detail="Email address has already been confirmed")
+    else:
         query = (
             update(User)
             .where(User.c.id == user_id)
@@ -105,8 +107,6 @@ async def confirm_email(token: str):
         )
         await database.execute(query)
         return {"message": "Email confirmed successfully!"}
-    else:
-        raise HTTPException(status_code=400, detail="Email address has already been confirmed")
 
 
 @router.get('/current_user')
