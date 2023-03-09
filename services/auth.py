@@ -99,6 +99,7 @@ class AuthService:
             email=user_data.email, phone=user_data.phone,
             hashed_password=AuthService.hash_password(user_data.password),
             email_verification_token=verification_token,
+            is_active=False,
         )
         #TODO отлавливать ошибки типа если есть такой email или телефон сейчас все ломается
         user_id = await database.execute(query)
