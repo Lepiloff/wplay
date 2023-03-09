@@ -17,7 +17,7 @@ users = Table(
     Column(
         "is_active",
         Boolean(),
-        server_default=sql.expression.true(),
+        server_default=sql.expression.false(),
         nullable=True,
     ),
     Column(
@@ -26,6 +26,7 @@ users = Table(
         server_default=sql.expression.false(),
         nullable=True,
     ),
+    Column("email_verification_token", String(256), nullable=True),
 )
 
 
