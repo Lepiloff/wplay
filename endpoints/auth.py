@@ -97,6 +97,7 @@ async def confirm_email(token: str):
 
     # Update the user's email confirmation status if the token is valid
     user_id, is_active = result
+    print("is_active before update:", is_active)
     if is_active is not None and is_active:
         raise HTTPException(status_code=400, detail="Email address has already been confirmed")
     else:
