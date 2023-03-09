@@ -1,12 +1,13 @@
 import boto3
 import os
 import base64
+import secrets
 
 from sqlalchemy import select
 from passlib.hash import bcrypt
 
-from jinja2 import Template
 from fastapi import HTTPException, status
+from fastapi.templating import Jinja2Templates
 
 from db import database
 from helpers.utils import str_to_int
@@ -14,6 +15,8 @@ from models.users import users, accounts
 from schemas.user_schema import Token, UserCreate
 from sessions.core.base import redis_cache
 from starlette.requests import Request
+
+templates = Jinja2Templates(directory="templates")
 
 
 async def get_current_user(request: Request):
@@ -41,20 +44,24 @@ async def is_authenticated(request: Request):
 class AuthService:
 
     @staticmethod
-    def generate_email_body(user_data: UserCreate, verification_token: str) -> str:
-        with open("email_template.html") as file:
-            template = Template(file.read())
-        return template.render(
-            first_name=user_data.first_name,
+    def generate_email_body(request: Request, user_data: UserCreate,
+                            verification_token: str) -> str:
+        template = templates.get_template("confirmation_email.html")
+        email_body = template.render(
+            request=request,
+            user_data=user_data,
             confirmation_url=f"https://team-mate.app/auth/confirm_email?token={verification_token}"
         )
+        return email_body
 
-    def send_confirmation_email(self, user_data: UserCreate, verification_token: str):
-        ses_client = boto3.client("ses", region_name="eu-central-1")
+    @staticmethod
+    def send_confirmation_email(request: Request, user_data: UserCreate, verification_token: str):
+        ses_client = boto3.client("ses", region_name="eu-central-1", aws_access_key_id=os.getenv('AWS_ACCESS_ID'),
+         aws_secret_access_key=os.getenv('AWS_ACCESS_KEY'))
         sender_email = "evgenylepilov@gmail.com"
         recipient_email = user_data.email
         email_subject = "Please confirm your email address"
-        email_body = self.generate_email_body(user_data,
+        email_body = AuthService.generate_email_body(request, user_data,
                                          verification_token)
         response = ses_client.send_email(
             Destination={
@@ -84,15 +91,16 @@ class AuthService:
     def hash_password(cls, password: str) -> str:
         return bcrypt.hash(password)
 
+    @staticmethod
     @database.transaction()
-    async def register_new_user(self, user_data: UserCreate):
-        verification_token=await self.generate_session_id()
+    async def register_new_user(request: Request,  user_data: UserCreate):
+        verification_token=secrets.token_urlsafe(32)
         query = users.insert().values(
             email=user_data.email, phone=user_data.phone,
-            hashed_password=self.hash_password(user_data.password),
+            hashed_password=AuthService.hash_password(user_data.password),
             email_verification_token=verification_token,
         )
-        #TODO отлавливать ошибки типа если есть такой email, сейчас все ломается
+        #TODO отлавливать ошибки типа если есть такой email или телефон сейчас все ломается
         user_id = await database.execute(query)
         query = accounts.insert().values(
             user_id=user_id,
@@ -101,7 +109,7 @@ class AuthService:
             gender=user_data.gender
         )
         await database.execute(query)
-        self.send_confirmation_email(user_data, verification_token)
+        AuthService.send_confirmation_email(request, user_data, verification_token)
         return user_id
 
 

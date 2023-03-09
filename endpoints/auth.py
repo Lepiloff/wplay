@@ -62,10 +62,11 @@ async def login(
 
 @router.post('/registration')
 async def signup(
+        request: Request,
         service: AuthService = Depends(),
         form: UserCreateForm = Depends(UserCreateForm.as_form)
 ):
-    await service.register_new_user(form)
+    await service.register_new_user(request, form)
     return RedirectResponse(url='/', status_code=status.HTTP_303_SEE_OTHER)
 
 
