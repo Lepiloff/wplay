@@ -94,16 +94,13 @@ async def confirm_email(token: str):
     result = dict(await database.fetch_one(query))
     if result is None:
         raise HTTPException(status_code=404, detail="Verification token not found")
-
     # Update the user's email confirmation status if the token is valid
-    print(f'+++++++++++result++++++++++++: {result}')
-    user_id, is_active = result
-    if is_active is not None and is_active:
+    if result['is_active'] is not None and result['is_active']:
         raise HTTPException(status_code=400, detail="Email address has already been confirmed")
     else:
         query = (
             update(User)
-            .where(User.c.id == user_id)
+            .where(User.c.id == result['user_id'])
             .values(is_active=True, email_verification_token=None)
         )
         await database.execute(query)
