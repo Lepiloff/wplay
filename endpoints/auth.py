@@ -96,8 +96,9 @@ async def confirm_email(token: str):
         raise HTTPException(status_code=404, detail="Verification token not found")
 
     # Update the user's email confirmation status if the token is valid
+    print(f'result: {result}')
     user_id, is_active = result
-    print("is_active before update:", is_active)
+    print(f'is_active: {is_active}   user_id: {user_id}')
     if is_active is not None and is_active:
         raise HTTPException(status_code=400, detail="Email address has already been confirmed")
     else:
