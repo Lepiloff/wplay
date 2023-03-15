@@ -91,14 +91,13 @@ async def logout(request: Request,
 async def confirm_email(token: str):
     # Check if the token exists in the database
     query = select([User.c.id, User.c.is_active]).where(User.c.email_verification_token == token)
-    result = await database.fetch_one(query)
+    result = dict(await database.fetch_one(query))
     if result is None:
         raise HTTPException(status_code=404, detail="Verification token not found")
 
     # Update the user's email confirmation status if the token is valid
     print(f'result: {result}')
     user_id, is_active = result
-    print(f'is_active: {is_active}   user_id: {user_id}')
     if is_active is not None and is_active:
         raise HTTPException(status_code=400, detail="Email address has already been confirmed")
     else:
