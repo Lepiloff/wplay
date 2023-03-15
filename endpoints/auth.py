@@ -100,7 +100,7 @@ async def confirm_email(token: str):
     else:
         query = (
             update(User)
-            .where(User.c.id == result['user_id'])
+            .where(User.c.id == result['id'])
             .values(is_active=True, email_verification_token=None)
         )
         await database.execute(query)
