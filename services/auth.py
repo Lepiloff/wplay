@@ -103,10 +103,6 @@ class AuthService:
         )
         #TODO отлавливать ошибки типа если есть такой email или телефон сейчас все ломается
         user_id = await database.execute(query)
-        query = users.select().where(users.c.id == user_id)
-        result = await database.fetch_one(query)
-        is_active = result['is_active']
-        print(f'is_active {is_active}')
         query = accounts.insert().values(
             user_id=user_id,
             name=user_data.first_name,
